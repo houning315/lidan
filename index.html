@@ -183,7 +183,7 @@
     <div class="header">
         <div class="title">智能理单系统</div>
         <div class="subtitle">化太岁 | 清水寺 | 补财库 | 消灾 | 贵人<br>学业 | 健康 | 爱情 | 踩小人 | 放鱼</div>
-        <button class="btn-caishen" onclick="alert('即将导航至：九路/黄财神合并理单系统')">九路/黄财神合并理单</button>
+        <button class="btn-caishen" onclick="window.location.href='caishen.html'">财神理单系统</button>
         <div style="font-size: 11px; color: var(--text-muted);">每个客户信息以空行分隔</div>
     </div>
 
@@ -609,8 +609,6 @@
 
             extraText = extraText.replaceAll(/[一二两三四五六七八九十百千万0-9]+(?:份|桶|位)/g, ' ');
             extraText = extraText.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
-            
-            // 修复点 1：将错误的含有换行符的正则替换为安全的空白符和标点匹配
             extraText = extraText.replaceAll(/[\s,.()（），：:;；]+/g, ' ').trim();
             extraText = extraText.replace(/^[.\s:：,+＋!！❗➕➖✖➗✔️✅❌]+/, '');
 
@@ -769,8 +767,6 @@
                 }
 
                 raw_text = raw_text.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
-                
-                // 修复点 2：修复第二个带换行符的报错正则
                 raw_text = raw_text.replaceAll(/[\s,.()（），：:;；]+/g, ' ').trim();
                 raw_text = raw_text.replace(/^[.\s:：,+＋!！❗➕➖✖➗✔️✅❌]+/, '');
 
@@ -953,6 +949,23 @@
                 return;
             }
 
+            // 新增逻辑：允许用户自定义文件名
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const defaultName = `皇恩寺理单_${dateStr}`;
+            let userInputName = prompt("请输入要导出的文件名称（不要加.csv后缀）：", defaultName);
+            
+            // 如果用户点击取消，则终止分享
+            if (userInputName === null) {
+                return;
+            }
+            
+            // 处理空输入，并自动加上 .csv 后缀
+            userInputName = userInputName.trim() === "" ? defaultName : userInputName.trim();
+            if (!userInputName.toLowerCase().endsWith('.csv')) {
+                userInputName += '.csv';
+            }
+            const filename = userInputName;
+
             const header = ["名称", "指定", "农历", "年历", "姓名", "性别", "属相", "年龄", "年", "月", "日", "时辰", "其他", "小人"];
             let csvContent = header.join(",") + "\r\n";
             
@@ -970,15 +983,13 @@
 
             // UTF-8 BOM for Excel compatibility
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const dateStr = new Date().toISOString().slice(0, 10);
-            const filename = `皇恩寺理单_${dateStr}.csv`;
             const file = new File([blob], filename, { type: 'text/csv' });
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
                         files: [file],
-                        title: '皇恩寺理单数据',
+                        title: '理单数据',
                         text: '理单导出的CSV文件，请查收。'
                     });
                 } catch (error) {
