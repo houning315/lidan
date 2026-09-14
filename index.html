@@ -176,6 +176,39 @@
             color: var(--danger);
         }
 
+        /* 自定义Modal弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .modal-title { font-size: 16px; color: var(--gold); font-weight: bold; margin-bottom: 6px; }
+        .modal-subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; }
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .modal-buttons { display: flex; gap: 10px; }
+        .btn-modal-confirm { background: var(--gold); color: #000; font-size: 14px; padding: 10px; }
+        .btn-modal-cancel { background: transparent; color: var(--text-muted); border: 1px solid #555; font-size: 14px; padding: 10px; }
+
     </style>
 </head>
 <body>
@@ -191,7 +224,7 @@
         <textarea id="inputArea" placeholder="请在此粘贴订单内容..."></textarea>
         <div class="action-buttons">
             <button class="btn-parse" onclick="processOrders()">解析数据</button>
-            <button class="btn-share" onclick="shareToWeChat()">导出CSV并分享至微信</button>
+            <button class="btn-share" onclick="openShareModal()">导出CSV并分享至微信</button>
             <button class="btn-copy" onclick="copyTableData()">复制数据表格</button>
         </div>
     </div>
@@ -209,6 +242,19 @@
                 <!-- Data will be populated here -->
             </tbody>
         </table>
+    </div>
+
+    <!-- 微信分享自定义文件名弹窗 -->
+    <div id="shareModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box glass-panel">
+            <div class="modal-title">自定义导出文件名</div>
+            <div class="modal-subtitle">无需输入后缀（如修改为：1000）</div>
+            <input type="text" id="shareFilenameInput" class="modal-input" placeholder="请输入文件名" />
+            <div class="modal-buttons">
+                <button class="btn-modal-cancel" onclick="closeShareModal()">取消</button>
+                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出并分享</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -943,28 +989,39 @@
             });
         }
 
-        async function shareToWeChat() {
+        // 获取 YYYYMMDD 格式的纯数字日期字符串
+        function getDefaultDateFileName() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            return `${yyyy}${mm}${dd}`;
+        }
+
+        function openShareModal() {
             if (globalProcessedData.length === 0) {
                 alert("请先解析数据！");
                 return;
             }
+            document.getElementById('shareFilenameInput').value = getDefaultDateFileName();
+            document.getElementById('shareModal').style.display = 'flex';
+        }
 
-            // 新增逻辑：允许用户自定义文件名
-            const dateStr = new Date().toISOString().slice(0, 10);
-            const defaultName = `皇恩寺理单_${dateStr}`;
-            let userInputName = prompt("请输入要导出的文件名称（不要加.csv后缀）：", defaultName);
+        function closeShareModal() {
+            document.getElementById('shareModal').style.display = 'none';
+        }
+
+        async function confirmShareToWeChat() {
+            let userInputName = document.getElementById('shareFilenameInput').value.trim();
+            const defaultName = getDefaultDateFileName();
             
-            // 如果用户点击取消，则终止分享
-            if (userInputName === null) {
-                return;
-            }
-            
-            // 处理空输入，并自动加上 .csv 后缀
-            userInputName = userInputName.trim() === "" ? defaultName : userInputName.trim();
+            userInputName = userInputName === "" ? defaultName : userInputName;
             if (!userInputName.toLowerCase().endsWith('.csv')) {
                 userInputName += '.csv';
             }
             const filename = userInputName;
+
+            closeShareModal();
 
             const header = ["名称", "指定", "农历", "年历", "姓名", "性别", "属相", "年龄", "年", "月", "日", "时辰", "其他", "小人"];
             let csvContent = header.join(",") + "\r\n";
@@ -996,14 +1053,13 @@
                     console.log('分享取消或失败:', error);
                 }
             } else {
-                // Fallback for browsers that don't support Web Share API with files
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                alert("您的浏览器不支持直接分享文件，已为您自动下载CSV文件，请前往相册/文件应用中选择并在微信中发送。");
+                alert("您的浏览器不支持直接分享文件，已为您自动下载CSV文件。");
             }
         }
     </script>
