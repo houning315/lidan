@@ -267,16 +267,16 @@
         const CN_NUMS = ["零", "一", "两", "三", "四", "五", "六", "七", "八", "九", "十"];
 
         const KEYWORDS = {
-            '化太岁': ['化太岁', '太岁', '化太歲', '太歲', '化太岁符', '太岁符', '化太歲符', '太歲符'],
-            '清水寺': ['清水寺', '清水廟', '清水庙', '清水寺符', '清水庙符', '清水廟符'],
-            '补财库': ['补财库', '補財庫', '财库', '財庫', '补财库符', '補財庫符', '财库符', '財庫符'],
-            '消灾': ['消灾', '消灾符', '消灾福', '消災', '消災符', '消災福', '化凶星'],
-            '健康': ['健康福', '健康符', '健康桶', '健康'],
-            '接贵人': ['接贵人', '贵人', '迎贵人', '接貴人', '貴人', '迎貴人', '接贵人符', '贵人符', '迎贵人符', '接貴人符', '貴人符', '迎貴人符'],
-            '学业': ['学业符', '事业符', '学业', '事业', '學業符', '事業符', '學業', '事業'],
-            '爱情': ['爱情符', '爱情', '愛情符', '愛情'],
-            '踩小人': ['踩小人', '送穷鬼', '送窮鬼', '送穷鬼踩小人', '送窮鬼踩小人', '送穷鬼踩小人符', '送窮鬼踩小人符', '踩小人符'],
-            '放鱼': ['放鱼', '放魚', '放生', '放生鱼', '放生魚']
+            '化太岁': ['化太岁符', '化太歲符', '太岁符', '太歲符', '化太岁', '化太歲', '太岁', '太歲'],
+            '清水寺': ['清水寺符', '清水庙符', '清水廟符', '清水寺', '清水廟', '清水庙'],
+            '补财库': ['补财库符', '補財庫符', '财库符', '財庫符', '补财库', '補財庫', '财库', '財庫'],
+            '消灾': ['消灾符', '消灾福', '消災符', '消災福', '化凶星', '消灾', '消災'],
+            '健康': ['健康符', '健康福', '健康桶', '健康'],
+            '接贵人': ['接贵人符', '贵人符', '迎贵人符', '接貴人符', '貴人符', '迎貴人符', '接贵人', '贵人', '迎贵人', '接貴人', '貴人', '迎貴人'],
+            '学业': ['学业符', '事业符', '學業符', '事業符', '学业', '事业', '學業', '事業'],
+            '爱情': ['爱情符', '愛情符', '爱情', '愛情'],
+            '踩小人': ['送穷鬼踩小人符', '送穷鬼踩小人', '送窮鬼踩小人符', '送窮鬼踩小人', '踩小人符', '踩小人', '送穷鬼', '送窮鬼'],
+            '放鱼': ['放生鱼', '放生魚', '放鱼', '放魚', '放生']
         };
 
         let ALL_PRODUCT_KEYWORDS = [];
@@ -302,7 +302,7 @@
 
         function formatQty(q) {
             if (!q) return "一份";
-            let num_str = String(q).trim();
+            let num_str = String(q).trim().replace(/[份桶位]/g, '');
             if (/^\d+$/.test(num_str)) {
                 let n = parseInt(num_str);
                 if (n >= 1 && n <= 10) num_str = CN_NUMS[n];
@@ -312,7 +312,7 @@
                 if (!valid_cn.includes(num_str)) return "一份";
             }
             if (num_str === "二") num_str = "两";
-            return num_str + (num_str.endsWith("份") ? "" : "份");
+            return num_str + "份";
         }
 
         function extractProductsFromBlock(text) {
@@ -340,7 +340,8 @@
 
             for (let p_type in KEYWORDS) {
                 if (p_type === '清水寺') continue;
-                for (let key of KEYWORDS[p_type]) {
+                let sorted_keys = [...KEYWORDS[p_type]].sort((a, b) => b.length - a.length);
+                for (let key of sorted_keys) {
                     if (scanText.includes(`双${key}`) || scanText.includes(`雙${key}`) || scanText.includes(`${key}双份`) || scanText.includes(`${key}雙份`) || scanText.includes(`${key}双桶`) || scanText.includes(`${key}雙桶`) || scanText.includes(`${key}双位`) || scanText.includes(`${key}雙位`)) {
                         let qty = p_type === '放鱼' ? "两桶" : "两份";
                         products.push({ type: p_type, qty: qty });
@@ -358,14 +359,18 @@
                 }
             }
 
-            let unique = [];
-            let seen = new Set();
+            let typeMap = new Map();
             for (let p of products) {
-                if (!seen.has(p.type)) {
-                    unique.push(p);
-                    seen.add(p.type);
+                if (!typeMap.has(p.type)) {
+                    typeMap.set(p.type, p);
+                } else {
+                    let existing = typeMap.get(p.type);
+                    if ((existing.qty === "一份" || existing.qty === "一桶") && (p.qty !== "一份" && p.qty !== "一桶")) {
+                        typeMap.set(p.type, p);
+                    }
                 }
             }
+            let unique = Array.from(typeMap.values());
 
             let has_fangyu = unique.some(p => p.type === '放鱼');
             if (has_fangyu) {
@@ -757,7 +762,6 @@
                 rawExtraText = rawExtraText.replaceAll(/(?:周|星期)[0-9一二三四五六日天留]+/g, '').trim();
             }
             
-            // 去除红色span，直接输出文本
             let extraHtml = rawExtraText ? rawExtraText : "";
 
             let randomizeTargets = ['健康', '学业', '接贵人', '爱情', '补财库'];
@@ -818,7 +822,6 @@
                 raw_text = raw_text.replaceAll(/[\s,.()（），：:;；]+/g, ' ').trim();
                 raw_text = raw_text.replace(/^[.\s:：,+＋!！❗➕➖✖➗✔️✅❌]+/, '');
 
-                // 去除红色span，直接输出文本
                 if (raw_text) row[12] = raw_text;
             } else if (prod.type === '清水寺') {
                 row[4] = `${info.name} ${info.gender}`.trim();
@@ -969,8 +972,8 @@
                 let tr = document.createElement('tr');
                 for (let cell of row) {
                     let td = document.createElement('td');
-                    td.innerText = cell; // 使用innerText确保纯文本
-                    td.contentEditable = "true"; // ★ 设置为可编辑单元格
+                    td.innerText = cell;
+                    td.contentEditable = "true";
                     tr.appendChild(td);
                 }
                 tbody.appendChild(tr);
@@ -988,7 +991,6 @@
             rows.forEach(tr => {
                 let rowData = [];
                 tr.querySelectorAll('td').forEach(td => {
-                    // 替换回车，防止TSV换行错乱
                     rowData.push(td.innerText.replace(/\n/g, ' '));
                 });
                 tsvLines.push(rowData.join('\t'));
@@ -1038,7 +1040,6 @@
             const header = ["名称", "指定", "农历", "年历", "姓名", "性别", "属相", "年龄", "年", "月", "日", "时辰", "其他", "小人"];
             let csvContent = header.join(",") + "\r\n";
             
-            // ★ 改为从DOM实时抓取数据，确保导出包含手动编辑的内容
             const tbody = document.getElementById('tableBody');
             const rows = tbody.querySelectorAll('tr');
 
