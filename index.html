@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>九路/黄财神合并理单3 (Web)</title>
+    <title>皇恩寺理单系统1 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -13,7 +13,6 @@
             --text-main: #f7e7ce;
             --text-muted: #999999;
             --border-color: rgba(212, 175, 55, 0.3);
-            --danger-red: #ff4d4f;
         }
 
         * {
@@ -31,6 +30,7 @@
             padding-bottom: 40px;
         }
 
+        /* Glassmorphism containers */
         .glass-panel {
             background: var(--surface-color);
             backdrop-filter: blur(12px);
@@ -71,7 +71,6 @@
             border-radius: 16px;
             font-weight: bold;
             margin-bottom: 10px;
-            cursor: pointer;
         }
 
         .status-bar {
@@ -139,6 +138,7 @@
             border: 1px solid #555;
         }
 
+        /* Table Wrapper */
         .table-container {
             overflow-x: auto;
             border-radius: 8px;
@@ -159,6 +159,7 @@
             border-bottom: 1px solid #2a2a2a;
         }
         
+        /* 增加可编辑单元格的聚焦样式 */
         td[contenteditable="true"]:focus {
             outline: 2px solid var(--gold);
             background-color: rgba(212, 175, 55, 0.1);
@@ -177,12 +178,7 @@
             border-bottom: none;
         }
 
-        /* 红字样式控制 */
-        .danger-text {
-            color: var(--danger-red);
-            font-weight: bold;
-        }
-
+        /* 自定义Modal弹窗样式 */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -245,6 +241,7 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
+                <!-- Data will be populated here -->
             </tbody>
         </table>
     </div>
@@ -270,16 +267,16 @@
         const CN_NUMS = ["零", "一", "两", "三", "四", "五", "六", "七", "八", "九", "十"];
 
         const KEYWORDS = {
-            '化太岁': ['化太岁', '太岁', '化太歲', '太歲', '化太岁符', '太岁符', '化太歲符', '太歲符'],
-            '清水寺': ['清水寺', '清水廟', '清水庙', '清水寺符', '清水庙符', '清水廟符'],
-            '补财库': ['补财库', '補財庫', '财库', '財庫', '补财库符', '補財庫符', '财库符', '財庫符'],
-            '消灾': ['消灾', '消灾符', '消灾福', '消災', '消災符', '消災福', '化凶星'],
-            '健康': ['健康福', '健康符', '健康桶', '健康'],
-            '接贵人': ['接贵人', '贵人', '迎贵人', '接貴人', '貴人', '迎貴人', '接贵人符', '贵人符', '迎贵人符', '接貴人符', '貴人符', '迎貴人符'],
-            '学业': ['学业符', '事业符', '学业', '事业', '學業符', '事業符', '學業', '事業'],
-            '爱情': ['爱情符', '爱情', '愛情符', '愛情'],
-            '踩小人': ['踩小人', '送穷鬼', '送窮鬼', '送穷鬼踩小人', '送窮鬼踩小人', '送穷鬼踩小人符', '送窮鬼踩小人符', '踩小人符'],
-            '放鱼': ['放鱼', '放魚', '放生', '放生鱼', '放生魚']
+            '化太岁': ['化太岁符', '化太歲符', '太岁符', '太歲符', '化太岁', '化太歲', '太岁', '太歲'],
+            '清水寺': ['清水寺符', '清水庙符', '清水廟符', '清水寺', '清水廟', '清水庙'],
+            '补财库': ['补财库符', '補財庫符', '财库符', '財庫符', '补财库', '補財庫', '财库', '財庫'],
+            '消灾': ['消灾符', '消灾福', '消災符', '消災福', '化凶星', '消灾', '消災'],
+            '健康': ['健康符', '健康福', '健康桶', '健康'],
+            '接贵人': ['接贵人符', '贵人符', '迎贵人符', '接貴人符', '貴人符', '迎貴人符', '接贵人', '贵人', '迎贵人', '接貴人', '貴人', '迎貴人'],
+            '学业': ['学业符', '事业符', '學業符', '事業符', '学业', '事业', '學業', '事業'],
+            '爱情': ['爱情符', '愛情符', '爱情', '愛情'],
+            '踩小人': ['送穷鬼踩小人符', '送穷鬼踩小人', '送窮鬼踩小人符', '送窮鬼踩小人', '踩小人符', '踩小人', '送穷鬼', '送窮鬼'],
+            '放鱼': ['放生鱼', '放生魚', '放鱼', '放魚', '放生']
         };
 
         let ALL_PRODUCT_KEYWORDS = [];
@@ -305,7 +302,7 @@
 
         function formatQty(q) {
             if (!q) return "一份";
-            let num_str = String(q).trim();
+            let num_str = String(q).trim().replace(/[份桶位]/g, '');
             if (/^\d+$/.test(num_str)) {
                 let n = parseInt(num_str);
                 if (n >= 1 && n <= 10) num_str = CN_NUMS[n];
@@ -315,7 +312,7 @@
                 if (!valid_cn.includes(num_str)) return "一份";
             }
             if (num_str === "二") num_str = "两";
-            return num_str + (num_str.endsWith("份") ? "" : "份");
+            return num_str + "份";
         }
 
         function extractProductsFromBlock(text) {
@@ -343,7 +340,8 @@
 
             for (let p_type in KEYWORDS) {
                 if (p_type === '清水寺') continue;
-                for (let key of KEYWORDS[p_type]) {
+                let sorted_keys = [...KEYWORDS[p_type]].sort((a, b) => b.length - a.length);
+                for (let key of sorted_keys) {
                     if (scanText.includes(`双${key}`) || scanText.includes(`雙${key}`) || scanText.includes(`${key}双份`) || scanText.includes(`${key}雙份`) || scanText.includes(`${key}双桶`) || scanText.includes(`${key}雙桶`) || scanText.includes(`${key}双位`) || scanText.includes(`${key}雙位`)) {
                         let qty = p_type === '放鱼' ? "两桶" : "两份";
                         products.push({ type: p_type, qty: qty });
@@ -361,14 +359,18 @@
                 }
             }
 
-            let unique = [];
-            let seen = new Set();
+            let typeMap = new Map();
             for (let p of products) {
-                if (!seen.has(p.type)) {
-                    unique.push(p);
-                    seen.add(p.type);
+                if (!typeMap.has(p.type)) {
+                    typeMap.set(p.type, p);
+                } else {
+                    let existing = typeMap.get(p.type);
+                    if ((existing.qty === "一份" || existing.qty === "一桶") && (p.qty !== "一份" && p.qty !== "一桶")) {
+                        typeMap.set(p.type, p);
+                    }
                 }
             }
+            let unique = Array.from(typeMap.values());
 
             let has_fangyu = unique.some(p => p.type === '放鱼');
             if (has_fangyu) {
@@ -454,15 +456,15 @@
                 }
             }
 
-            let textForGender = name ? text.replace(name, "____") : text;
-            let posMale = textForGender.indexOf("男");
-            let posFemale = textForGender.indexOf("女");
+            // 修改点：根据“女”和“男”出现的先后顺序判定主客户性别
             let gender = "";
-            if (posMale !== -1 && posFemale !== -1) {
-                gender = posFemale < posMale ? "女" : "男";
-            } else if (posFemale !== -1) {
+            let idxNan = text.indexOf("男");
+            let idxNv = text.indexOf("女");
+            if (idxNan !== -1 && idxNv !== -1) {
+                gender = idxNv < idxNan ? "女" : "男";
+            } else if (idxNv !== -1) {
                 gender = "女";
-            } else if (posMale !== -1) {
+            } else if (idxNan !== -1) {
                 gender = "男";
             }
 
@@ -667,7 +669,9 @@
             }
 
             extraText = extraText.replaceAll(/[一二两三四五六七八九十百千万0-9]+(?:份|桶|位)/g, ' ');
-
+            extraText = extraText.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
+            
+            // 修改点：彻底消除所有标点符号及特殊符号，仅留纯文字/数字
             extraText = extraText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ');
             extraText = extraText.replace(/\s+/g, ' ').trim();
 
@@ -766,11 +770,16 @@
             let specialLunarMonths = ['正月', '腊月', '冬月'];
 
             let rawExtraText = info.extraText;
-            if (rawExtraText && ['健康', '学业', '接贵人', '爱情', '补财库', '消灾'].includes(prod.type)) {
-                rawExtraText = rawExtraText.replaceAll(/(?:周|星期)[0-9一二三四五六日天留]+/g, '').trim();
+            if (rawExtraText) {
+                if (['健康', '学业', '接贵人', '爱情', '补财库', '消灾'].includes(prod.type)) {
+                    rawExtraText = rawExtraText.replaceAll(/(?:周|星期)[0-9一二三四五六日天留]+/g, '').trim();
+                }
+                // 清洗多余字符号
+                rawExtraText = rawExtraText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
             }
             
-            let extraHtml = rawExtraText ? `<span class="danger-text">${rawExtraText}</span>` : "";
+            // 修改点：多余字显示为红色 HTML 标签
+            let extraHtml = rawExtraText ? `<span style="color: red;">${rawExtraText}</span>` : "";
 
             let randomizeTargets = ['健康', '学业', '接贵人', '爱情', '补财库'];
 
@@ -814,10 +823,10 @@
                 if (info.calendarType && (!info.allDates || info.calendarType !== (info.allDates[0].prefix||""))) {
                     raw_text = raw_text.replace(info.calendarType, ' ');
                 }
-                if (info.gender) raw_text = raw_text.replace(info.gender, ' '); 
+                if (info.gender) raw_text = raw_text.replace(info.gender, ' ');
                 if (info.zodiac) raw_text = raw_text.replace(info.zodiac, ' ');
                 if (info.age) {
-                    let ageRegex = new RegExp(`(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?\\s*${info.age}\\s*(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?`);
+                    let ageRegex = new RegExp(`(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?\s*${info.age}\s*(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?`);
                     raw_text = raw_text.replace(ageRegex, ' ');
                 }
 
@@ -826,10 +835,10 @@
                     raw_text = raw_text.replaceAll(new RegExp(escapeRegExp(term), 'g'), ' ');
                 }
 
-                raw_text = raw_text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ');
-                raw_text = raw_text.replace(/\s+/g, ' ').trim();
+                // 清除标点并标记为红字
+                raw_text = raw_text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 
-                if (raw_text) row[12] = `<span class="danger-text">${raw_text}</span>`;
+                if (raw_text) row[12] = `<span style="color: red;">${raw_text}</span>`;
             } else if (prod.type === '清水寺') {
                 row[4] = `${info.name} ${info.gender}`.trim();
                 row[5] = ""; row[6] = info.zodiac; row[7] = ageLabel;
@@ -853,8 +862,11 @@
                 let r12_parts = [];
                 if (row[12]) r12_parts.push(row[12]);
                 if (date2_str) r12_parts.push(date2_str);
-                if (extraHtml) r12_parts.push(extraHtml);
-                row[12] = r12_parts.join(" ");
+                if (rawExtraText) r12_parts.push(rawExtraText);
+
+                // 化太岁“其他”字段拼接，消除标点并全红显示
+                let r12_str = r12_parts.join(" ").replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+                row[12] = r12_str ? `<span style="color: red;">${r12_str}</span>` : "";
 
                 row[4] = info.name; row[5] = info.gender; row[6] = info.zodiac; row[7] = ageLabel;
                 row[8] = info.y; row[9] = currentMonth.replace('月', ''); row[10] = info.d;
@@ -928,6 +940,7 @@
                 }
             } else {
                 row[4] = [info.name, info.gender, ageLabel, dateWithCalendar, displayTime, info.zodiac].filter(Boolean).join(" ");
+                if (extraHtml) row[4] += " " + extraHtml;
             }
             return row;
         }
@@ -979,7 +992,7 @@
                 let tr = document.createElement('tr');
                 for (let cell of row) {
                     let td = document.createElement('td');
-                    td.innerHTML = cell;
+                    td.innerHTML = cell; // 修改点：改为 innerHTML 以呈现红字样式
                     td.contentEditable = "true";
                     tr.appendChild(td);
                 }
@@ -1012,10 +1025,9 @@
 
         function getDefaultDateFileName() {
             const now = new Date();
-            const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
-            return `${yyyy}${mm}${dd}`;
+            return `自动${mm}${dd}`;
         }
 
         function openShareModal() {
@@ -1032,47 +1044,37 @@
             document.getElementById('shareModal').style.display = 'none';
         }
 
-        // ★ 新增的按钮响应函数：收集表格并转成 CSV
-        function confirmShareToWeChat() {
-            let filenameInput = document.getElementById('shareFilenameInput').value.trim();
-            if (!filenameInput) {
-                filenameInput = getDefaultDateFileName();
-            }
-            if (!filenameInput.toLowerCase().endsWith('.csv')) {
-                filenameInput += '.csv';
-            }
-
-            const thead = document.querySelector('#resultTable thead tr');
-            const tbody = document.getElementById('tableBody');
-            const rows = tbody.querySelectorAll('tr');
+        async function confirmShareToWeChat() {
+            let userInputName = document.getElementById('shareFilenameInput').value.trim();
+            const defaultName = getDefaultDateFileName();
             
-            if (rows.length === 0) {
-                alert("没有数据可导出！");
-                return;
+            userInputName = userInputName === "" ? defaultName : userInputName;
+            if (!userInputName.toLowerCase().endsWith('.csv')) {
+                userInputName += '.csv';
             }
-
-            let csvContent = "";
-            
-            let headers = [];
-            thead.querySelectorAll('th').forEach(th => {
-                headers.push('"' + th.innerText.replace(/"/g, '""') + '"');
-            });
-            csvContent += headers.join(',') + "\n";
-
-            rows.forEach(tr => {
-                let rowData = [];
-                tr.querySelectorAll('td').forEach(td => {
-                    let text = td.innerText.replace(/"/g, '""');
-                    rowData.push('"' + text + '"');
-                });
-                csvContent += rowData.join(',') + "\n";
-            });
+            const filename = userInputName;
 
             closeShareModal();
-            shareDirectlyToWeChat(csvContent, filenameInput);
-        }
 
-        async function shareDirectlyToWeChat(csvContent, filename) {
+            const header = ["名称", "指定", "农历", "年历", "姓名", "性别", "属相", "年龄", "年", "月", "日", "时辰", "其他", "小人"];
+            let csvContent = header.join(",") + "\r\n";
+            
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            rows.forEach(tr => {
+                let cleanRow = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    let str = td.innerText;
+                    str = str.replace(/"/g, '""');
+                    if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+                        str = `"${str}"`;
+                    }
+                    cleanRow.push(str);
+                });
+                csvContent += cleanRow.join(",") + "\r\n";
+            });
+
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const file = new File([blob], filename, { type: 'text/csv' });
 
@@ -1083,9 +1085,8 @@
                         title: '理单数据',
                         text: '理单导出的CSV文件，请查收。'
                     });
-                    console.log('直接分享唤起成功');
                 } catch (error) {
-                    console.log('用户取消了分享或分享失败:', error);
+                    console.log('分享取消或失败:', error);
                 }
             } else {
                 const link = document.createElement("a");
@@ -1094,7 +1095,7 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                alert("您的浏览器不支持直接分享文件，已为您降级为本地下载。");
+                alert("您的浏览器不支持直接分享文件，已为您自动下载CSV文件。");
             }
         }
     </script>
