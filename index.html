@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>手机理单系统 (Web)</title>
+    <title>九路/黄财神合并理单 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -1009,7 +1009,6 @@
             });
         }
 
-        // 修改：生成自动MMDD格式文件名（例如：自动0918）
         function getDefaultDateFileName() {
             const now = new Date();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -1067,10 +1066,9 @@
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
+                    // 核心修复：仅传递 files 数组，移除 title 和 text，避免 iOS 微信分享插件闪退
                     await navigator.share({
-                        files: [file],
-                        title: '理单数据',
-                        text: '理单导出的CSV文件，请查收。'
+                        files: [file]
                     });
                 } catch (error) {
                     console.log('分享取消或失败:', error);
