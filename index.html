@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>手机智能理单系统 (Web)</title>
+    <title>九路/黄财神合并理单 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -229,7 +229,7 @@
         <textarea id="inputArea" placeholder="请在此粘贴订单内容..."></textarea>
         <div class="action-buttons">
             <button class="btn-parse" onclick="processOrders()">解析数据</button>
-            <button class="btn-share" onclick="openShareModal()">导出CSV文件</button>
+            <button class="btn-share" onclick="openShareModal()">导出CSV并分享至微信</button>
             <button class="btn-copy" onclick="copyTableData()">复制数据表格</button>
         </div>
     </div>
@@ -251,11 +251,11 @@
     <div id="shareModal" class="modal-overlay" style="display: none;">
         <div class="modal-box glass-panel">
             <div class="modal-title">自定义导出文件名</div>
-            <div class="modal-subtitle">无需输入后缀（如修改为：自动0918）</div>
+            <div class="modal-subtitle">无需输入后缀（如修改为：1000）</div>
             <input type="text" id="shareFilenameInput" class="modal-input" placeholder="请输入文件名" />
             <div class="modal-buttons">
                 <button class="btn-modal-cancel" onclick="closeShareModal()">取消</button>
-                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出 CSV</button>
+                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出并分享</button>
             </div>
         </div>
     </div>
@@ -1011,9 +1011,10 @@
 
         function getDefaultDateFileName() {
             const now = new Date();
+            const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
-            return `自动${mm}${dd}`;
+            return `${yyyy}${mm}${dd}`;
         }
 
         function openShareModal() {
@@ -1030,7 +1031,7 @@
             document.getElementById('shareModal').style.display = 'none';
         }
 
-        function confirmShareToWeChat() {
+        async function confirmShareToWeChat() {
             let userInputName = document.getElementById('shareFilenameInput').value.trim();
             const defaultName = getDefaultDateFileName();
             
@@ -1061,19 +1062,28 @@
                 csvContent += cleanRow.join(",") + "\r\n";
             });
 
-            // 生成 CSV 文件并触发网页下载
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const file = new File([blob], filename, { type: 'text/csv' });
 
-            // 提示用户后续微信发送方法
-            setTimeout(() => {
-                alert(`CSV 文件【${filename}】已生成并保存！\n\n发送给微信好友方法：\n打开微信 -> 进入好友聊天界面 -> 点击右下角「+」-> 选择「文件」-> 发送刚下载的 CSV 即可。`);
-            }, 300);
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file] // 修复核心：去掉 title 和 text 参数，强制微信接受文件本身
+                    });
+                } catch (error) {
+                    console.log('分享取消或失败:', error);
+                }
+            } else {
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+                alert("您的浏览器不支持直接分享文件，已为您自动下载CSV文件。");
+            }
         }
     </script>
 </body>
