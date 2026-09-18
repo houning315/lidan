@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>皇恩寺理单系统1 (Web)</title>
+    <title>皇恩寺理单系统 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -456,17 +456,7 @@
                 }
             }
 
-            // 修改点：根据“女”和“男”出现的先后顺序判定主客户性别
-            let gender = "";
-            let idxNan = text.indexOf("男");
-            let idxNv = text.indexOf("女");
-            if (idxNan !== -1 && idxNv !== -1) {
-                gender = idxNv < idxNan ? "女" : "男";
-            } else if (idxNv !== -1) {
-                gender = "女";
-            } else if (idxNan !== -1) {
-                gender = "男";
-            }
+            let gender = text.includes("男") ? "男" : (text.includes("女") ? "女" : "");
 
             let y = "", m_val = "", d_val = "", fullDate = "", secondDate = "";
             let allDates = [];
@@ -670,10 +660,8 @@
 
             extraText = extraText.replaceAll(/[一二两三四五六七八九十百千万0-9]+(?:份|桶|位)/g, ' ');
             extraText = extraText.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
-            
-            // 修改点：彻底消除所有标点符号及特殊符号，仅留纯文字/数字
-            extraText = extraText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ');
-            extraText = extraText.replace(/\s+/g, ' ').trim();
+            extraText = extraText.replaceAll(/[\s,.()（），：:;；]+/g, ' ').trim();
+            extraText = extraText.replace(/^[.\s:：,+＋!！❗➕➖✖➗✔️✅❌]+/, '');
 
             return {
                 name, gender, zodiac, y, m: m_val, d: d_val,
@@ -770,16 +758,11 @@
             let specialLunarMonths = ['正月', '腊月', '冬月'];
 
             let rawExtraText = info.extraText;
-            if (rawExtraText) {
-                if (['健康', '学业', '接贵人', '爱情', '补财库', '消灾'].includes(prod.type)) {
-                    rawExtraText = rawExtraText.replaceAll(/(?:周|星期)[0-9一二三四五六日天留]+/g, '').trim();
-                }
-                // 清洗多余字符号
-                rawExtraText = rawExtraText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+            if (rawExtraText && ['健康', '学业', '接贵人', '爱情', '补财库', '消灾'].includes(prod.type)) {
+                rawExtraText = rawExtraText.replaceAll(/(?:周|星期)[0-9一二三四五六日天留]+/g, '').trim();
             }
             
-            // 修改点：多余字显示为红色 HTML 标签
-            let extraHtml = rawExtraText ? `<span style="color: red;">${rawExtraText}</span>` : "";
+            let extraHtml = rawExtraText ? rawExtraText : "";
 
             let randomizeTargets = ['健康', '学业', '接贵人', '爱情', '补财库'];
 
@@ -835,10 +818,11 @@
                     raw_text = raw_text.replaceAll(new RegExp(escapeRegExp(term), 'g'), ' ');
                 }
 
-                // 清除标点并标记为红字
-                raw_text = raw_text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+                raw_text = raw_text.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
+                raw_text = raw_text.replaceAll(/[\s,.()（），：:;；]+/g, ' ').trim();
+                raw_text = raw_text.replace(/^[.\s:：,+＋!！❗➕➖✖➗✔️✅❌]+/, '');
 
-                if (raw_text) row[12] = `<span style="color: red;">${raw_text}</span>`;
+                if (raw_text) row[12] = raw_text;
             } else if (prod.type === '清水寺') {
                 row[4] = `${info.name} ${info.gender}`.trim();
                 row[5] = ""; row[6] = info.zodiac; row[7] = ageLabel;
@@ -862,11 +846,8 @@
                 let r12_parts = [];
                 if (row[12]) r12_parts.push(row[12]);
                 if (date2_str) r12_parts.push(date2_str);
-                if (rawExtraText) r12_parts.push(rawExtraText);
-
-                // 化太岁“其他”字段拼接，消除标点并全红显示
-                let r12_str = r12_parts.join(" ").replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-                row[12] = r12_str ? `<span style="color: red;">${r12_str}</span>` : "";
+                if (extraHtml) r12_parts.push(extraHtml);
+                row[12] = r12_parts.join(" ");
 
                 row[4] = info.name; row[5] = info.gender; row[6] = info.zodiac; row[7] = ageLabel;
                 row[8] = info.y; row[9] = currentMonth.replace('月', ''); row[10] = info.d;
@@ -940,7 +921,6 @@
                 }
             } else {
                 row[4] = [info.name, info.gender, ageLabel, dateWithCalendar, displayTime, info.zodiac].filter(Boolean).join(" ");
-                if (extraHtml) row[4] += " " + extraHtml;
             }
             return row;
         }
@@ -992,7 +972,7 @@
                 let tr = document.createElement('tr');
                 for (let cell of row) {
                     let td = document.createElement('td');
-                    td.innerHTML = cell; // 修改点：改为 innerHTML 以呈现红字样式
+                    td.innerText = cell;
                     td.contentEditable = "true";
                     tr.appendChild(td);
                 }
