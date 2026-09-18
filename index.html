@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>皇恩寺理单系统 (Web)</title>
+    <title>手机理单系统 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -13,6 +13,7 @@
             --text-main: #f7e7ce;
             --text-muted: #999999;
             --border-color: rgba(212, 175, 55, 0.3);
+            --danger-red: #ff4d4f;
         }
 
         * {
@@ -30,7 +31,6 @@
             padding-bottom: 40px;
         }
 
-        /* Glassmorphism containers */
         .glass-panel {
             background: var(--surface-color);
             backdrop-filter: blur(12px);
@@ -71,6 +71,7 @@
             border-radius: 16px;
             font-weight: bold;
             margin-bottom: 10px;
+            cursor: pointer;
         }
 
         .status-bar {
@@ -138,7 +139,6 @@
             border: 1px solid #555;
         }
 
-        /* Table Wrapper */
         .table-container {
             overflow-x: auto;
             border-radius: 8px;
@@ -159,7 +159,6 @@
             border-bottom: 1px solid #2a2a2a;
         }
         
-        /* 增加可编辑单元格的聚焦样式 */
         td[contenteditable="true"]:focus {
             outline: 2px solid var(--gold);
             background-color: rgba(212, 175, 55, 0.1);
@@ -178,7 +177,11 @@
             border-bottom: none;
         }
 
-        /* 自定义Modal弹窗样式 */
+        .danger-text {
+            color: var(--danger-red);
+            font-weight: bold;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -241,7 +244,6 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- Data will be populated here -->
             </tbody>
         </table>
     </div>
@@ -249,7 +251,7 @@
     <div id="shareModal" class="modal-overlay" style="display: none;">
         <div class="modal-box glass-panel">
             <div class="modal-title">自定义导出文件名</div>
-            <div class="modal-subtitle">无需输入后缀（如修改为：1000）</div>
+            <div class="modal-subtitle">无需输入后缀（如修改为：自动0918）</div>
             <input type="text" id="shareFilenameInput" class="modal-input" placeholder="请输入文件名" />
             <div class="modal-buttons">
                 <button class="btn-modal-cancel" onclick="closeShareModal()">取消</button>
@@ -267,16 +269,16 @@
         const CN_NUMS = ["零", "一", "两", "三", "四", "五", "六", "七", "八", "九", "十"];
 
         const KEYWORDS = {
-            '化太岁': ['化太岁符', '化太歲符', '太岁符', '太歲符', '化太岁', '化太歲', '太岁', '太歲'],
-            '清水寺': ['清水寺符', '清水庙符', '清水廟符', '清水寺', '清水廟', '清水庙'],
-            '补财库': ['补财库符', '補財庫符', '财库符', '財庫符', '补财库', '補財庫', '财库', '財庫'],
-            '消灾': ['消灾符', '消灾福', '消災符', '消災福', '化凶星', '消灾', '消災'],
-            '健康': ['健康符', '健康福', '健康桶', '健康'],
-            '接贵人': ['接贵人符', '贵人符', '迎贵人符', '接貴人符', '貴人符', '迎貴人符', '接贵人', '贵人', '迎贵人', '接貴人', '貴人', '迎貴人'],
-            '学业': ['学业符', '事业符', '學業符', '事業符', '学业', '事业', '學業', '事業'],
-            '爱情': ['爱情符', '愛情符', '爱情', '愛情'],
-            '踩小人': ['送穷鬼踩小人符', '送穷鬼踩小人', '送窮鬼踩小人符', '送窮鬼踩小人', '踩小人符', '踩小人', '送穷鬼', '送窮鬼'],
-            '放鱼': ['放生鱼', '放生魚', '放鱼', '放魚', '放生']
+            '化太岁': ['化太岁', '太岁', '化太歲', '太歲', '化太岁符', '太岁符', '化太歲符', '太歲符'],
+            '清水寺': ['清水寺', '清水廟', '清水庙', '清水寺符', '清水庙符', '清水廟符'],
+            '补财库': ['补财库', '補財庫', '财库', '財庫', '补财库符', '補財庫符', '财库符', '財庫符'],
+            '消灾': ['消灾', '消灾符', '消灾福', '消災', '消災符', '消災福', '化凶星'],
+            '健康': ['健康福', '健康符', '健康桶', '健康'],
+            '接贵人': ['接贵人', '贵人', '迎贵人', '接貴人', '貴人', '迎貴人', '接贵人符', '贵人符', '迎贵人符', '接貴人符', '貴人符', '迎貴人符'],
+            '学业': ['学业符', '事业符', '学业', '事业', '學業符', '事業符', '學業', '事業'],
+            '爱情': ['爱情符', '爱情', '愛情符', '愛情'],
+            '踩小人': ['踩小人', '送穷鬼', '送窮鬼', '送穷鬼踩小人', '送窮鬼踩小人', '送穷鬼踩小人符', '送窮鬼踩小人符', '踩小人符'],
+            '放鱼': ['放鱼', '放魚', '放生', '放生鱼', '放生魚']
         };
 
         let ALL_PRODUCT_KEYWORDS = [];
@@ -302,7 +304,7 @@
 
         function formatQty(q) {
             if (!q) return "一份";
-            let num_str = String(q).trim().replace(/[份桶位]/g, '');
+            let num_str = String(q).trim();
             if (/^\d+$/.test(num_str)) {
                 let n = parseInt(num_str);
                 if (n >= 1 && n <= 10) num_str = CN_NUMS[n];
@@ -312,7 +314,7 @@
                 if (!valid_cn.includes(num_str)) return "一份";
             }
             if (num_str === "二") num_str = "两";
-            return num_str + "份";
+            return num_str + (num_str.endsWith("份") ? "" : "份");
         }
 
         function extractProductsFromBlock(text) {
@@ -340,8 +342,7 @@
 
             for (let p_type in KEYWORDS) {
                 if (p_type === '清水寺') continue;
-                let sorted_keys = [...KEYWORDS[p_type]].sort((a, b) => b.length - a.length);
-                for (let key of sorted_keys) {
+                for (let key of KEYWORDS[p_type]) {
                     if (scanText.includes(`双${key}`) || scanText.includes(`雙${key}`) || scanText.includes(`${key}双份`) || scanText.includes(`${key}雙份`) || scanText.includes(`${key}双桶`) || scanText.includes(`${key}雙桶`) || scanText.includes(`${key}双位`) || scanText.includes(`${key}雙位`)) {
                         let qty = p_type === '放鱼' ? "两桶" : "两份";
                         products.push({ type: p_type, qty: qty });
@@ -359,18 +360,14 @@
                 }
             }
 
-            let typeMap = new Map();
+            let unique = [];
+            let seen = new Set();
             for (let p of products) {
-                if (!typeMap.has(p.type)) {
-                    typeMap.set(p.type, p);
-                } else {
-                    let existing = typeMap.get(p.type);
-                    if ((existing.qty === "一份" || existing.qty === "一桶") && (p.qty !== "一份" && p.qty !== "一桶")) {
-                        typeMap.set(p.type, p);
-                    }
+                if (!seen.has(p.type)) {
+                    unique.push(p);
+                    seen.add(p.type);
                 }
             }
-            let unique = Array.from(typeMap.values());
 
             let has_fangyu = unique.some(p => p.type === '放鱼');
             if (has_fangyu) {
@@ -456,7 +453,17 @@
                 }
             }
 
-            let gender = text.includes("男") ? "男" : (text.includes("女") ? "女" : "");
+            let textForGender = name ? text.replace(name, "____") : text;
+            let posMale = textForGender.indexOf("男");
+            let posFemale = textForGender.indexOf("女");
+            let gender = "";
+            if (posMale !== -1 && posFemale !== -1) {
+                gender = posFemale < posMale ? "女" : "男";
+            } else if (posFemale !== -1) {
+                gender = "女";
+            } else if (posMale !== -1) {
+                gender = "男";
+            }
 
             let y = "", m_val = "", d_val = "", fullDate = "", secondDate = "";
             let allDates = [];
@@ -659,9 +666,9 @@
             }
 
             extraText = extraText.replaceAll(/[一二两三四五六七八九十百千万0-9]+(?:份|桶|位)/g, ' ');
-            extraText = extraText.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
-            extraText = extraText.replaceAll(/[\s,.()（），：:;；]+/g, ' ').trim();
-            extraText = extraText.replace(/^[.\s:：,+＋!！❗➕➖✖➗✔️✅❌]+/, '');
+
+            extraText = extraText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ');
+            extraText = extraText.replace(/\s+/g, ' ').trim();
 
             return {
                 name, gender, zodiac, y, m: m_val, d: d_val,
@@ -762,7 +769,7 @@
                 rawExtraText = rawExtraText.replaceAll(/(?:周|星期)[0-9一二三四五六日天留]+/g, '').trim();
             }
             
-            let extraHtml = rawExtraText ? rawExtraText : "";
+            let extraHtml = rawExtraText ? `<span class="danger-text">${rawExtraText}</span>` : "";
 
             let randomizeTargets = ['健康', '学业', '接贵人', '爱情', '补财库'];
 
@@ -809,7 +816,7 @@
                 if (info.gender) raw_text = raw_text.replace(info.gender, ' ');
                 if (info.zodiac) raw_text = raw_text.replace(info.zodiac, ' ');
                 if (info.age) {
-                    let ageRegex = new RegExp(`(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?\s*${info.age}\s*(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?`);
+                    let ageRegex = new RegExp(`(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?\\s*${info.age}\\s*(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?`);
                     raw_text = raw_text.replace(ageRegex, ' ');
                 }
 
@@ -818,11 +825,10 @@
                     raw_text = raw_text.replaceAll(new RegExp(escapeRegExp(term), 'g'), ' ');
                 }
 
-                raw_text = raw_text.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
-                raw_text = raw_text.replaceAll(/[\s,.()（），：:;；]+/g, ' ').trim();
-                raw_text = raw_text.replace(/^[.\s:：,+＋!！❗➕➖✖➗✔️✅❌]+/, '');
+                raw_text = raw_text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ');
+                raw_text = raw_text.replace(/\s+/g, ' ').trim();
 
-                if (raw_text) row[12] = raw_text;
+                if (raw_text) row[12] = `<span class="danger-text">${raw_text}</span>`;
             } else if (prod.type === '清水寺') {
                 row[4] = `${info.name} ${info.gender}`.trim();
                 row[5] = ""; row[6] = info.zodiac; row[7] = ageLabel;
@@ -972,7 +978,7 @@
                 let tr = document.createElement('tr');
                 for (let cell of row) {
                     let td = document.createElement('td');
-                    td.innerText = cell;
+                    td.innerHTML = cell;
                     td.contentEditable = "true";
                     tr.appendChild(td);
                 }
@@ -1003,6 +1009,7 @@
             });
         }
 
+        // 修改：生成自动MMDD格式文件名（例如：自动0918）
         function getDefaultDateFileName() {
             const now = new Date();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
