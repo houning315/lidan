@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>皇恩寺理单系统3 (Web)</title>
+    <title>皇恩寺理单系统 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -159,7 +159,6 @@
             border-bottom: 1px solid #2a2a2a;
         }
         
-        /* 增加可编辑单元格的聚焦样式 */
         td[contenteditable="true"]:focus {
             outline: 2px solid var(--gold);
             background-color: rgba(212, 175, 55, 0.1);
@@ -456,7 +455,6 @@
                 }
             }
 
-            // 修改点：根据“女”和“男”出现的先后顺序判定主客户性别
             let gender = "";
             let idxNan = text.indexOf("男");
             let idxNv = text.indexOf("女");
@@ -670,8 +668,6 @@
 
             extraText = extraText.replaceAll(/[一二两三四五六七八九十百千万0-9]+(?:份|桶|位)/g, ' ');
             extraText = extraText.replaceAll(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
-            
-            // 修改点：彻底消除所有标点符号及特殊符号，仅留纯文字/数字
             extraText = extraText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ');
             extraText = extraText.replace(/\s+/g, ' ').trim();
 
@@ -774,13 +770,10 @@
                 if (['健康', '学业', '接贵人', '爱情', '补财库', '消灾'].includes(prod.type)) {
                     rawExtraText = rawExtraText.replaceAll(/(?:周|星期)[0-9一二三四五六日天留]+/g, '').trim();
                 }
-                // 清洗多余字符号
                 rawExtraText = rawExtraText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
             }
             
-            // 修改点：多余字显示为红色 HTML 标签
             let extraHtml = rawExtraText ? `<span style="color: red;">${rawExtraText}</span>` : "";
-
             let randomizeTargets = ['健康', '学业', '接贵人', '爱情', '补财库'];
 
             if (prod.type === '放鱼') {
@@ -830,7 +823,6 @@
                     raw_text = raw_text.replace(ageRegex, ' ');
                 }
 
-                // 修改点：使用最完整的过滤词库，涵盖出生年月日及其他所有前缀，并按长度排序彻底清除
                 let labelsToRemove = [
                     "皇恩寺", "是", "吉时", "吉",
                     "性别", "属性", "屬性", "属相", "屬相", "生肖", "属", "屬", 
@@ -840,14 +832,12 @@
                     "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "名字", "姓名", "真实姓名",
                     "真實姓名", "名称", "名稱", "客户", "客戶", "时辰", "時間", "时间", "阳历", "陽曆", "号", "小人名字"
                 ];
-                labelsToRemove.sort((a,b) => b.length - a.length); // 确保长词（出生年月日）比短词（出生、年）先被过滤
+                labelsToRemove.sort((a,b) => b.length - a.length);
                 for (let term of labelsToRemove) {
                     raw_text = raw_text.replaceAll(new RegExp(escapeRegExp(term), 'g'), ' ');
                 }
 
-                // 清除标点并标记为红字
                 raw_text = raw_text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-
                 if (raw_text) row[12] = `<span style="color: red;">${raw_text}</span>`;
             } else if (prod.type === '清水寺') {
                 row[4] = `${info.name} ${info.gender}`.trim();
@@ -874,7 +864,6 @@
                 if (date2_str) r12_parts.push(date2_str);
                 if (rawExtraText) r12_parts.push(rawExtraText);
 
-                // 化太岁“其他”字段拼接，消除标点并全红显示
                 let r12_str = r12_parts.join(" ").replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
                 row[12] = r12_str ? `<span style="color: red;">${r12_str}</span>` : "";
 
@@ -1002,7 +991,7 @@
                 let tr = document.createElement('tr');
                 for (let cell of row) {
                     let td = document.createElement('td');
-                    td.innerHTML = cell; // 修改点：改为 innerHTML 以呈现红字样式
+                    td.innerHTML = cell;
                     td.contentEditable = "true";
                     tr.appendChild(td);
                 }
@@ -1085,28 +1074,32 @@
                 csvContent += cleanRow.join(",") + "\r\n";
             });
 
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const file = new File([blob], filename, { type: 'text/csv' });
+            // 使用伪装的文本类型和时间戳降低拦截风险
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/plain;charset=utf-8;' });
+            const file = new File([blob], filename, { 
+                type: 'text/plain', 
+                lastModified: new Date().getTime() 
+            });
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
-                    // 核心修复点：仅传递 files 参数。
-                    // 绝不能带有 title 和 text 参数，否则 iOS 在打包传给微信扩展时会导致崩溃。
-                    await navigator.share({
-                        files: [file]
-                    });
+                    await navigator.share({ files: [file] });
+                    return;
                 } catch (error) {
                     console.log('分享取消或失败:', error);
                 }
-            } else {
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                alert("您的浏览器不支持直接分享文件，已为您自动下载CSV文件。");
             }
+
+            // 兜底方案：直接下载到“文件”App供手动转发
+            alert("由于 iOS 微信的严格限制，可能无法直接转发。文件现已自动下载，请在手机自带的【文件】App 中找到它，并长按选择分享给微信好友。");
+            
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
         }
     </script>
 </body>
