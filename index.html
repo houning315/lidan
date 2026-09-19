@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>皇恩寺理单系统2 (Web)</title>
+    <title>皇恩寺理单系统 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -247,7 +247,7 @@
             <input type="text" id="shareFilenameInput" class="modal-input" placeholder="请输入文件名" />
             <div class="modal-buttons">
                 <button class="btn-modal-cancel" onclick="closeShareModal()">取消</button>
-                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出并分享</button>
+                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出并下载</button>
             </div>
         </div>
     </div>
@@ -916,7 +916,7 @@
                     let dateTimeStr = effectiveDate + (info.weekday ? ` 周${info.weekday}` : "");
                     if (displayTime) dateTimeStr += " " + displayTime;
 
-                    dateTimeStr = dateTimeStr.replace(/[\s.,[,，、;；]+$/, '').trim();
+                    dateTimeStr = dateTimeStr.replace(/[\s.,[,.,;；]+$/, '').trim();
 
                     if (prod.type === '接贵人') {
                         let infoParts = [info.name, info.gender, info.zodiac, ageLabel].filter(Boolean);
@@ -1038,7 +1038,8 @@
             document.getElementById('shareModal').style.display = 'none';
         }
 
-        async function confirmShareToWeChat() {
+        // 修改后的稳定下载逻辑，完美避开微信闪退
+        function confirmShareToWeChat() {
             let userInputName = document.getElementById('shareFilenameInput').value.trim();
             const defaultName = getDefaultDateFileName();
             
@@ -1070,22 +1071,8 @@
             });
 
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const file = new File([blob], filename, { 
-                type: 'text/csv', 
-                lastModified: new Date().getTime() 
-            });
-
-            // 优先尝试系统原生分享（工作流A）
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({ files: [file] });
-                    return;
-                } catch (error) {
-                    console.log('分享取消或失败:', error);
-                }
-            }
-
-            // 如果浏览器不支持文件分享，则回退到安全下载
+            
+            // 强制触发下载，生成实体文件再分享
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = filename;
@@ -1093,7 +1080,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+            setTimeout(() => URL.revokeObjectURL(link.href), 100);
         }
     </script>
 </body>
