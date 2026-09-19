@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>皇恩寺理单系统 (Web)</title>
+    <title>皇恩寺理单系统2 (Web)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -30,7 +30,6 @@
             padding-bottom: 40px;
         }
 
-        /* Glassmorphism containers */
         .glass-panel {
             background: var(--surface-color);
             backdrop-filter: blur(12px);
@@ -138,7 +137,6 @@
             border: 1px solid #555;
         }
 
-        /* Table Wrapper */
         .table-container {
             overflow-x: auto;
             border-radius: 8px;
@@ -177,7 +175,6 @@
             border-bottom: none;
         }
 
-        /* 自定义Modal弹窗样式 */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -209,7 +206,6 @@
         .modal-buttons { display: flex; gap: 10px; }
         .btn-modal-confirm { background: var(--gold); color: #000; font-size: 14px; padding: 10px; }
         .btn-modal-cancel { background: transparent; color: var(--text-muted); border: 1px solid #555; font-size: 14px; padding: 10px; }
-
     </style>
 </head>
 <body>
@@ -240,7 +236,6 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- Data will be populated here -->
             </tbody>
         </table>
     </div>
@@ -1074,13 +1069,13 @@
                 csvContent += cleanRow.join(",") + "\r\n";
             });
 
-            // 使用伪装的文本类型和时间戳降低拦截风险
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/plain;charset=utf-8;' });
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const file = new File([blob], filename, { 
-                type: 'text/plain', 
+                type: 'text/csv', 
                 lastModified: new Date().getTime() 
             });
 
+            // 优先尝试系统原生分享（工作流A）
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({ files: [file] });
@@ -1090,12 +1085,11 @@
                 }
             }
 
-            // 兜底方案：直接下载到“文件”App供手动转发
-            alert("由于 iOS 微信的严格限制，可能无法直接转发。文件现已自动下载，请在手机自带的【文件】App 中找到它，并长按选择分享给微信好友。");
-            
+            // 如果浏览器不支持文件分享，则回退到安全下载
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = filename;
+            document.styleSheets && (link.style.display = "none");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
