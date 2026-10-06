@@ -264,7 +264,7 @@
             '化太岁': ['化太岁符', '化太歲符', '太岁符', '太歲符', '化太岁', '化太歲', '太岁', '太歲'],
             '清水寺': ['清水寺符', '清水庙符', '清水廟符', '清水寺', '清水廟', '清水庙'],
             '补财库': ['补财库符', '補財庫符', '财库符', '財庫符', '补财库', '補財庫', '财库', '財庫'],
-            '消灾': ['消灾符', '消灾福', '消災符', '消災福', '化凶星', '消灾', '消災'],
+            '消灾': ['北斗消灾符', '北斗消灾', '北斗消災符', '北斗消災', '北斗', '消灾符', '消灾福', '消災符', '消災福', '化凶星', '消灾', '消災'],
             '健康': ['健康符', '健康福', '健康桶', '健康'],
             '接贵人': ['接贵人符', '贵人符', '迎贵人符', '接貴人符', '貴人符', '迎貴人符', '接贵人', '贵人', '迎贵人', '接貴人', '貴人', '迎貴人'],
             '学业': ['学业符', '事业符', '學業符', '事業符', '学业', '事业', '學業', '事業'],
@@ -429,7 +429,7 @@
                     let pClean = p.trim();
                     if (["名字", "姓名", "真实姓名", "真實姓名", "客户", "客戶"].includes(pClean)) continue;
                     let m = pClean.match(/^[\u4e00-\u9fa5]{2,4}/);
-                    let exclusions = ["皇恩寺", "属相", "屬相", "生肖", "属", "屬", "性别", "性別", "农历", "農曆", "阴历", "陰曆", "新历", "新曆", "国历", "國曆", "阳历", "陽曆", "年份", "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "出生年月日", "出生年月日阳历"];
+                    let exclusions = ["皇恩寺", "属相", "屬相", "生肖", "属", "屬", "性别", "性別", "农历", "農曆", "阴历", "陰曆", "新历", "新曆", "国历", "國曆", "阳历", "陽曆", "年份", "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "出生年月日", "出生年月", "出生年月日阳历"];
                     if (m && !exclusions.includes(m[0])) {
                         name = m[0];
                         break;
@@ -451,14 +451,20 @@
             }
 
             let gender = "";
-            let idxNan = text.indexOf("男");
-            let idxNv = text.indexOf("女");
-            if (idxNan !== -1 && idxNv !== -1) {
-                gender = idxNv < idxNan ? "女" : "男";
-            } else if (idxNv !== -1) {
-                gender = "女";
-            } else if (idxNan !== -1) {
-                gender = "男";
+            let explicitGenderMatch = text.match(/(?:性别|性別)[:：\s]*([男女])/);
+            if (explicitGenderMatch) {
+                gender = explicitGenderMatch[1];
+            } else {
+                let textWithoutExtractedName = name ? text.replaceAll(name, "") : text;
+                let idxNan = textWithoutExtractedName.indexOf("男");
+                let idxNv = textWithoutExtractedName.indexOf("女");
+                if (idxNan !== -1 && idxNv !== -1) {
+                    gender = idxNv < idxNan ? "女" : "男";
+                } else if (idxNv !== -1) {
+                    gender = "女";
+                } else if (idxNan !== -1) {
+                    gender = "男";
+                }
             }
 
             let y = "", m_val = "", d_val = "", fullDate = "", secondDate = "";
@@ -511,12 +517,14 @@
 
             let ageNum = "";
             let isNominalAge = false;
-            let ageMatch = text.match(/(年龄|年齡|虚岁|虛歲|岁数|周岁|周歲)[:：\s]*(\d+)|(\d+)\s*(周岁|周歲|岁|歲|虛歲|虚岁)/);
-            if (ageMatch) {
-                ageNum = ageMatch[2] || ageMatch[3];
-                let ageLabelText = ageMatch[1] || ageMatch[4];
-                if (ageLabelText && (ageLabelText.includes("虚") || ageLabelText.includes("虛"))) {
-                    isNominalAge = true;
+            let nominalMatch = text.match(/(?:年龄|年齡|岁数)[:：\s]*(?:虚岁|虛歲|虚|虛)\s*(\d+)|(?:虚岁|虛歲|虚|虛)[:：\s]*(\d+)|(\d+)\s*(?:虚岁|虛歲)/);
+            if (nominalMatch) {
+                ageNum = nominalMatch[1] || nominalMatch[2] || nominalMatch[3];
+                isNominalAge = true;
+            } else {
+                let ageMatch = text.match(/(?:年龄|年齡|岁数|周岁|周歲)[:：\s]*(\d+)|(\d+)\s*(?:周岁|周歲|岁|歲)/);
+                if (ageMatch) {
+                    ageNum = ageMatch[1] || ageMatch[2];
                 }
             }
 
@@ -601,9 +609,11 @@
             else if (text.includes("阳历") || text.includes("陽曆")) calendarType = "阳历";
 
             let weekday = "";
+            let rawWeekdayMatchStr = "";
             let textForWeekdaySearch = name ? text.replaceAll(name, "____") : text;
             let weekMatch = textForWeekdaySearch.match(/(?:星期|周)([一二三四五六日天1234567])/);
             if (weekMatch) {
+                rawWeekdayMatchStr = weekMatch[0];
                 let val = weekMatch[1];
                 let w_map = {'1':'一','2':'二','3':'三','4':'四','5':'五','6':'六','7':'日','天':'日'};
                 weekday = w_map[val] || val;
@@ -626,7 +636,8 @@
                 extraText = extraText.replaceAll(kwRegex, " ");
             }
 
-            let termsToRemove = [name, gender, zodiac, fullDate, secondDate, timeStr, rawTimeMatchStr, calendarType, weekday, textAfterA];
+            let termsToRemove = [name, gender, zodiac, fullDate, secondDate, timeStr, rawTimeMatchStr, calendarType, rawWeekdayMatchStr, textAfterA];
+            if (zodiac) termsToRemove.push(zodiac + "年");
             if (y) termsToRemove.push(y+"年", y);
             if (m_val) {
                 let m_str = String(m_val);
@@ -649,7 +660,8 @@
                 "皇恩寺", "是", "吉时", "吉",
                 "性别", "属性", "屬性", "属相", "屬相", "生肖", "属", "屬", 
                 "出生年月日阳历", "出生年月日阴历", "出生年月日新历", "出生年月日国历", 
-                "出生年月日", "出生日期", "出生年", "生日", "年月日", "日期", 
+                "出生年月阳历", "出生年月阴历", "出生年月新历", "出生年月国历",
+                "出生年月日", "出生年月", "出生日期", "出生年", "生日", "年月日", "年月", "日期", 
                 "农历", "農曆", "阴历", "陰曆", "新历", "新曆", "国历", "國曆", "年份",
                 "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "名字", "姓名", "真实姓名",
                 "真實姓名", "名称", "名稱", "客户", "客戶", "时辰", "時間", "时间", "阳历", "陽曆", "号", "小人名字"
@@ -720,6 +732,15 @@
                 }
             }
 
+            let displayTime = prod.type === '化太岁' ? convertToZodiacHour(info.timeStr, info.originalText) : info.timeStr;
+
+            if (prod.type !== '化太岁' && displayTime && /[子丑寅卯辰巳午未申酉戌亥吉]$/.test(displayTime)) {
+                displayTime += "时";
+            }
+
+            let target7 = ['补财库', '消灾', '接贵人', '学业', '健康', '爱情', '踩小人'];
+            let timeFor7 = (target7.includes(prod.type) && displayTime) ? displayTime : "";
+
             let date1_str = p1 + currentFullDate;
             let date2_str = info.secondDate ? (p2 + info.secondDate) : "";
 
@@ -731,21 +752,20 @@
                 date2_str = p2 + mod_d2;
             }
 
+            if (timeFor7) {
+                date1_str += timeFor7;
+                if (date2_str) date2_str += timeFor7;
+            }
+
             let weekSuffix = info.weekday ? ` 周${info.weekday}` : "";
             let dateWithCalendar = date1_str;
-            let typesNeedWeekSuffix = ['爱情', '学业', '接贵人', '健康'];
+            let typesNeedWeekSuffix = ['爱情', '学业', '接贵人', '健康', '补财库'];
 
             if (typesNeedWeekSuffix.includes(prod.type)) dateWithCalendar += weekSuffix;
 
             if (doubleDateTargets.includes(prod.type) && info.secondDate) {
                 dateWithCalendar = date1_str + " " + date2_str;
                 if (typesNeedWeekSuffix.includes(prod.type)) dateWithCalendar += weekSuffix;
-            }
-
-            let displayTime = prod.type === '化太岁' ? convertToZodiacHour(info.timeStr, info.originalText) : info.timeStr;
-
-            if (prod.type !== '化太岁' && displayTime && /[子丑寅卯辰巳午未申酉戌亥吉]$/.test(displayTime)) {
-                displayTime += "时";
             }
 
             let ageLabel = "";
@@ -776,7 +796,11 @@
             } else if (prod.type === '踩小人') {
                 let zodiac_str = info.zodiac ? `属${info.zodiac}` : "";
                 row[4] = `${info.name} ${info.gender} ${zodiac_str}`.replace(/\s+/g, ' ').trim();
-                let agePrefix = info.age ? `${info.age}岁 ` : "";
+                
+                let agePrefix = "";
+                if (info.age) {
+                    agePrefix = info.isNominalAge ? `虚${info.age}岁 ` : `${info.age}岁 `;
+                }
                 
                 let m_str = String(info.m);
                 let d_str = String(info.d);
@@ -790,6 +814,8 @@
                 } else {
                     formattedDate = currentFullDate.replaceAll('年', '、').replaceAll('月', '、').replaceAll('日', '');
                 }
+                
+                if (timeFor7) formattedDate += timeFor7;
                 
                 row[5] = `${agePrefix}${p1}${formattedDate}`.trim();
 
@@ -812,9 +838,12 @@
                     raw_text = raw_text.replace(info.calendarType, ' ');
                 }
                 if (info.gender) raw_text = raw_text.replace(info.gender, ' ');
-                if (info.zodiac) raw_text = raw_text.replace(info.zodiac, ' ');
+                if (info.zodiac) {
+                    raw_text = raw_text.replace(info.zodiac + '年', ' ');
+                    raw_text = raw_text.replace(info.zodiac, ' ');
+                }
                 if (info.age) {
-                    let ageRegex = new RegExp(`(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?\s*${info.age}\s*(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?`);
+                    let ageRegex = new RegExp(`(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?\\s*${info.age}\\s*(?:虚岁|虛歲|岁数|周岁|周歲|岁|歲)?`);
                     raw_text = raw_text.replace(ageRegex, ' ');
                 }
 
@@ -822,7 +851,8 @@
                     "皇恩寺", "是", "吉时", "吉",
                     "性别", "属性", "屬性", "属相", "屬相", "生肖", "属", "屬", 
                     "出生年月日阳历", "出生年月日阴历", "出生年月日新历", "出生年月日国历", 
-                    "出生年月日", "出生日期", "出生年", "生日", "年月日", "日期", 
+                    "出生年月阳历", "出生年月阴历", "出生年月新历", "出生年月国历",
+                    "出生年月日", "出生年月", "出生日期", "出生年", "生日", "年月日", "年月", "日期", 
                     "农历", "農曆", "阴历", "陰曆", "新历", "新曆", "国历", "國曆", "年份",
                     "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "名字", "姓名", "真实姓名",
                     "真實姓名", "名称", "名稱", "客户", "客戶", "时辰", "時間", "时间", "阳历", "陽曆", "号", "小人名字"
@@ -870,7 +900,7 @@
                 if (info.age && info.timeStr) {
                     row[4] = `${info.name} ${info.gender} ${info.zodiac}`.trim();
                     row[5] = dateWithCalendar;
-                    if (!info.weekday) row[6] = `${displayTime} ${ageLabel}`.trim();
+                    if (!info.weekday) row[6] = timeFor7 ? ageLabel : `${displayTime} ${ageLabel}`.trim();
                 } else if (info.age && !info.timeStr) {
                     let dotDate = [info.y, info.m, info.d].filter(Boolean).join("、");
                     let finalDotDate = p1 + dotDate;
@@ -878,7 +908,7 @@
                     row[5] = `${ageLabel} ${finalDotDate}`.trim();
                 } else {
                     row[4] = `${info.name} ${info.gender} ${info.zodiac}`.trim();
-                    row[5] = [ageLabel, dateWithCalendar, displayTime].filter(Boolean).join(" ");
+                    row[5] = [ageLabel, dateWithCalendar, (timeFor7 ? "" : displayTime)].filter(Boolean).join(" ");
                 }
 
                 if (info.secondDate) row[6] = date2_str;
@@ -891,7 +921,7 @@
                     if (ageLabel) pieces.push(ageLabel);
 
                     let dateAndTimeParts = [dateWithCalendar];
-                    if (displayTime) dateAndTimeParts.push(displayTime);
+                    if (displayTime && !timeFor7) dateAndTimeParts.push(displayTime);
                     let dateTimeBlock = dateAndTimeParts.filter(Boolean).join(" ");
                     if (dateTimeBlock) pieces.push(dateTimeBlock);
 
@@ -914,7 +944,7 @@
                 } else {
                     let effectiveDate = date1_str + (date2_str ? " " + date2_str : "");
                     let dateTimeStr = effectiveDate + (info.weekday ? ` 周${info.weekday}` : "");
-                    if (displayTime) dateTimeStr += " " + displayTime;
+                    if (displayTime && !timeFor7) dateTimeStr += " " + displayTime;
 
                     dateTimeStr = dateTimeStr.replace(/[\s.,[,.,;；]+$/, '').trim();
 
@@ -933,7 +963,7 @@
                     }
                 }
             } else {
-                row[4] = [info.name, info.gender, ageLabel, dateWithCalendar, displayTime, info.zodiac].filter(Boolean).join(" ");
+                row[4] = [info.name, info.gender, ageLabel, dateWithCalendar, (timeFor7 ? "" : displayTime), info.zodiac].filter(Boolean).join(" ");
                 if (extraHtml) row[4] += " " + extraHtml;
             }
             return row;
@@ -1038,7 +1068,6 @@
             document.getElementById('shareModal').style.display = 'none';
         }
 
-        // 修改后的稳定下载逻辑，完美避开微信闪退
         function confirmShareToWeChat() {
             let userInputName = document.getElementById('shareFilenameInput').value.trim();
             const defaultName = getDefaultDateFileName();
@@ -1072,7 +1101,6 @@
 
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             
-            // 强制触发下载，生成实体文件再分享
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = filename;
