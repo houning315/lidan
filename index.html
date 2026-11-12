@@ -251,7 +251,7 @@
             <input type="text" id="shareFilenameInput" class="modal-input" placeholder="请输入文件名" />
             <div class="modal-buttons">
                 <button class="btn-modal-cancel" onclick="closeShareModal()">取消</button>
-                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出并下载</button>
+                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出并分享</button>
             </div>
         </div>
     </div>
@@ -1838,7 +1838,24 @@
             });
 
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            
+
+            // \u4F18\u5148\uFF1A\u76F4\u63A5\u8C03\u51FA\u7CFB\u7EDF\u5206\u4EAB\u9762\u677F\uFF08\u9009\u5FAE\u4FE1 \u2192 \u9009\u597D\u53CB/\u6587\u4EF6\u4F20\u8F93\u52A9\u624B\u5373\u53EF\uFF09\uFF0C\u4E0D\u518D\u5148\u4E0B\u8F7D
+            // \u4E0D\u652F\u6301\u6587\u4EF6\u5206\u4EAB\u7684\u73AF\u5883\uFF08\u5982\u7535\u8111\u6D4F\u89C8\u5668\uFF09\uFF0C\u81EA\u52A8\u9000\u56DE\u539F\u6765\u7684\u4E0B\u8F7D\u65B9\u5F0F
+            if (navigator.share && navigator.canShare && typeof File === 'function') {
+                let file = null;
+                try { file = new File([blob], filename, { type: 'text/csv' }); } catch (e) { file = null; }
+                if (file && navigator.canShare({ files: [file] })) {
+                    navigator.share({ files: [file] }).catch(err => {
+                        if (err && err.name === 'AbortError') return;   // \u81EA\u5DF1\u70B9\u4E86\u53D6\u6D88\uFF0C\u4E0D\u5904\u7406
+                        downloadCsvFile(blob, filename);
+                    });
+                    return;
+                }
+            }
+            downloadCsvFile(blob, filename);
+        }
+
+        function downloadCsvFile(blob, filename) {
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = filename;
