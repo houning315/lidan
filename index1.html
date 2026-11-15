@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>皇恩寺理单系统 (Web)</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --surface-color: rgba(30, 30, 30, 0.6);
+            --gold: #d4af37;
+            --gold-hover: #b88a00;
+            --text-main: #f7e7ce;
+            --text-muted: #999999;
+            --border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 15px;
+            padding-bottom: 40px;
+        }
+
+        .glass-panel {
+            background: var(--surface-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 24px;
+            color: var(--gold);
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: #8a6d3b;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .btn-caishen {
+            background-color: rgba(212, 175, 55, 0.1);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .status-bar {
+            font-size: 13px;
+            color: var(--gold);
+            text-align: center;
+            padding: 10px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #e0e0e0;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            margin-bottom: 15px;
+        }
+        
+        textarea:focus {
+            border-color: var(--gold);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-parse {
+            background-color: var(--gold);
+            color: #000;
+        }
+        .btn-parse:active { background-color: var(--gold-hover); }
+
+        .btn-share {
+            background-color: transparent;
+            color: #07c160; 
+            border: 1px solid #07c160;
+        }
+        .btn-share:active { background-color: rgba(7, 193, 96, 0.1); }
+        
+        .btn-copy {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid #555;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        
+        td[contenteditable="true"]:focus {
+            outline: 2px solid var(--gold);
+            background-color: rgba(212, 175, 55, 0.1);
+            border-radius: 4px;
+        }
+
+        th {
+            background-color: rgba(212, 175, 55, 0.1);
+            color: var(--gold);
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td { white-space: pre; }
+        td.name-warn { color: #ffd60a; font-weight: bold; }
+
+        /* ---------- 模板指定列记忆 ---------- */
+        .tpl-title { font-size: 14px; color: var(--gold); font-weight: bold; letter-spacing: 1px; margin-bottom: 10px; }
+        .tpl-radios { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 10px; }
+        .tpl-radios label { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: bold; color: var(--text-main); cursor: pointer; }
+        .tpl-radios input[type=radio] { accent-color: var(--gold); width: 16px; height: 16px; }
+        .tpl-sets { display: flex; gap: 8px; margin-bottom: 6px; }
+        .tpl-set-btn { flex: 1; width: auto; padding: 8px 6px; font-size: 13px; background: transparent; color: var(--gold); border: 1px solid #8a6d3b; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tpl-set-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+        .tpl-set-btn:disabled { color: #5a5a5a; border-color: #3a3a3a; cursor: default; }
+        .tpl-infos { display: flex; gap: 8px; margin-bottom: 10px; }
+        .tpl-info { flex: 1; font-size: 11px; color: var(--gold); text-align: center; cursor: pointer; min-width: 0; }
+        .tpl-info.empty { color: #8a6d3b; }
+        .tpl-cust { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .tpl-cust label { font-size: 13px; font-weight: bold; color: var(--gold); white-space: nowrap; }
+        .tpl-input { flex: 1; min-width: 0; padding: 9px 10px; background: rgba(0,0,0,0.5); border: 1px solid #8a6d3b; border-radius: 6px; color: var(--text-main); font-size: 15px; outline: none; }
+        .tpl-input:focus { border-color: var(--gold); }
+        .tpl-more { border-top: 1px solid var(--border-color); padding-top: 10px; }
+        .tpl-more summary { font-size: 13px; font-weight: bold; color: var(--gold); cursor: pointer; padding: 2px 0 8px; }
+        .tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-tpl { padding: 10px 6px; font-size: 13px; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 8px; }
+        .btn-tpl.green { background: #2e7d32; color: #fff; border: none; }
+        .btn-tpl.yellow { background: #ffd400; color: #000; border: none; grid-column: 1 / -1; }
+        .tpl-help { font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-top: 10px; }
+        .tpl-mem-info { font-size: 11px; color: #8a6d3b; text-align: right; margin-top: 6px; }
+        .modal-wide { width: 92%; max-width: 440px; max-height: 92vh; overflow-y: auto; }
+        .modal-textarea { height: 230px; font-size: 12px; margin-bottom: 10px; text-align: left; }
+        .file-pick { display: inline-block; font-size: 12px; color: var(--gold); margin-bottom: 12px; }
+        .file-pick input { font-size: 12px; color: var(--text-muted); max-width: 100%; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .modal-title { font-size: 16px; color: var(--gold); font-weight: bold; margin-bottom: 6px; }
+        .modal-subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; }
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .modal-buttons { display: flex; gap: 10px; }
+        .btn-modal-confirm { background: var(--gold); color: #000; font-size: 14px; padding: 10px; }
+        .btn-modal-cancel { background: transparent; color: var(--text-muted); border: 1px solid #555; font-size: 14px; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title">智能理单系统</div>
+        <div class="subtitle">化太岁 | 龙莲太岁 | 清水寺 | 补财库 | 消灾 | 贵人<br>学业 | 健康 | 爱情 | 踩小人 | 放鱼 | 香油</div>
+        <button class="btn-caishen" onclick="window.location.href='caishen.html'">财神理单系统</button>
+        <div style="font-size: 11px; color: var(--text-muted);">每个客户信息以空行分隔，一个客户多项目可写在同一段内</div>
+        <div style="font-size: 11px; color: #8a6d3b; margin-top: 4px;">红色文字 = 系统提取到的审核外信息；点击表格内容可直接修改；名称变黄 = 字数超限</div>
+    </div>
+
+    <div class="glass-panel" id="tplPanel">
+        <div class="tpl-title">模板指定列记忆</div>
+        <div class="tpl-radios">
+            <label><input type="radio" name="tplMode" id="tplModeOff" checked> 不指定模板理单</label>
+            <label><input type="radio" name="tplMode" id="tplModeOn"> 按记忆指定模板号</label>
+        </div>
+        <div class="tpl-sets">
+            <button type="button" class="tpl-set-btn" id="tplSetBtn0">模板1</button>
+            <button type="button" class="tpl-set-btn" id="tplSetBtn1">模板2</button>
+        </div>
+        <div class="tpl-infos">
+            <div class="tpl-info empty" id="tplInfo0">模板1：未导入</div>
+            <div class="tpl-info empty" id="tplInfo1">模板2：未导入</div>
+        </div>
+        <div class="tpl-cust">
+            <label for="tplCustomer">客户csv名称</label>
+            <input type="text" id="tplCustomer" class="tpl-input" placeholder="输入客户名称" autocomplete="off" autocapitalize="off" spellcheck="false" />
+        </div>
+        <details class="tpl-more" id="tplMore">
+            <summary>模板数据管理（电脑 ⇄ 网页）</summary>
+            <div class="tpl-grid">
+                <button type="button" class="btn-tpl" onclick="tplOpenImport()">导入电脑模板数据</button>
+                <button type="button" class="btn-tpl" onclick="tplOpenExport()">导出模板记忆（复制回电脑）</button>
+                <button type="button" class="btn-tpl" onclick="document.getElementById('tplCsvFile').click()">浏览导入csv</button>
+                <button type="button" class="btn-tpl green" onclick="tplUpdateMemoryFromCsv()">更新记忆</button>
+                <button type="button" class="btn-tpl yellow" onclick="tplCopyMemoryFromSet()">模板复制记忆</button>
+            </div>
+            <div class="tpl-help">网页无法直接读取电脑文件夹：先在电脑上用“导出模板数据”小工具生成数据，粘贴到“导入电脑模板数据”即可（数据会记在本手机浏览器里）。用完后点“导出模板记忆”，复制回电脑的 理单模板记忆.json 保持两边同步。</div>
+            <div class="tpl-mem-info" id="tplMemInfo">已记忆客户：0 个</div>
+        </details>
+        <input type="file" id="tplCsvFile" accept=".csv,text/csv,text/plain" style="display:none" />
+    </div>
+
+    <div class="glass-panel">
+        <textarea id="inputArea" placeholder="请在此粘贴订单内容..."></textarea>
+        <div class="action-buttons">
+            <button class="btn-parse" onclick="processOrders()">解析数据</button>
+            <button class="btn-share" onclick="openShareModal()">导出CSV并分享至微信</button>
+            <button class="btn-copy" onclick="copyTableData()">复制数据表格</button>
+        </div>
+    </div>
+
+    <div class="status-bar" id="statusLabel">状态：系统就绪 | 待命</div>
+
+    <div class="table-container">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>名称</th><th>指定</th><th>农历</th><th>年历</th><th>姓名</th><th>性别</th><th>属相</th><th>年龄</th><th>年</th><th>月</th><th>日</th><th>时辰</th><th>其他</th><th>小人</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="shareModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box glass-panel">
+            <div class="modal-title">自定义导出文件名</div>
+            <div class="modal-subtitle">无需输入后缀（如修改为：1000）</div>
+            <input type="text" id="shareFilenameInput" class="modal-input" placeholder="请输入文件名" />
+            <div class="modal-buttons">
+                <button class="btn-modal-cancel" onclick="closeShareModal()">取消</button>
+                <button class="btn-modal-confirm" onclick="confirmShareToWeChat()">确认导出并分享</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tplDataModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box modal-wide glass-panel">
+            <div class="modal-title" id="tplDataTitle"></div>
+            <div class="modal-subtitle" id="tplDataSub"></div>
+            <textarea id="tplDataText" class="modal-textarea" spellcheck="false"></textarea>
+            <div id="tplDataFileRow"><label class="file-pick">选择文件：<input type="file" id="tplDataFile" accept=".txt,.json,text/plain,application/json" /></label></div>
+            <div class="modal-buttons" id="tplDataBtns"></div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 基础工具（与 Python 版 re 行为对齐） =================
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Python 的 \d 会匹配全角数字（１９８８），JS 的 \d 只认半角。这里把正则里的 \d 统一换成"半角+全角"，行为与 Python 版一致。
+        function _pyPat(p) {
+            let out = '', inClass = false;
+            for (let i = 0; i < p.length; i++) {
+                const c = p[i];
+                if (c === '\\') {
+                    const n = p[i + 1];
+                    if (n === 'd') out += inClass ? '0-9０-９' : '[0-9０-９]';
+                    else out += c + (n === undefined ? '' : n);
+                    i++;
+                } else {
+                    if (!inClass && c === '[') inClass = true;
+                    else if (inClass && c === ']') inClass = false;
+                    out += c;
+                }
+            }
+            return out;
+        }
+
+        // 【正则缓存】每条正则只编译一次（对应 Python 版的 _rc）
+        const _RE_CACHE = new Map();
+        function _rc(pattern, flags) {
+            flags = flags || '';
+            const key = flags + '\u0000' + pattern;
+            let r = _RE_CACHE.get(key);
+            if (!r) {
+                r = new RegExp(_pyPat(pattern), flags);
+                _RE_CACHE.set(key, r);
+            }
+            return r;
+        }
+        function _pyInt(s) {
+            return parseInt(String(s).replace(/[０-９]/g, ch => String(ch.charCodeAt(0) - 0xff10)), 10);
+        }
+        function _isDigitStr(s) { return /^[0-9０-９]+$/.test(s); }
+        function _replAll(s, a, b) { return s.split(a).join(b); }
+        function _replOnce(s, a, b) {
+            const i = s.indexOf(a);
+            return i < 0 ? s : s.slice(0, i) + b + s.slice(i + a.length);
+        }
+        function _countOf(s, a) { return s.split(a).length - 1; }
+        function _byLenDesc(arr) { return arr.slice().sort((a, b) => b.length - a.length); }
+        function _uniq(arr) { return Array.from(new Set(arr)); }
+
+        const ZODIACS = "鼠牛虎兔龙蛇马羊猴鸡狗猪鼠牛虎兔龍蛇馬羊猴雞狗豬";
+        const CN_NUMS = ["零", "一", "两", "三", "四", "五", "六", "七", "八", "九", "十"];
+
+        // ================= 关键词（由 run5.6.9.py 原样导出） =================
+        const KEYWORDS = {
+            "化太岁": ["化解太岁", "化解太歲", "化解太岁符", "化解太歲符", "化双太岁", "化双份太岁", "化太岁双份", "化太岁两份", "太岁双份", "太岁两份", "双份太岁", "化太岁", "太岁", "化太歲", "太歲", "化太岁符", "太岁符", "化太歲符", "太歲符", "犯太岁", "犯太歲", "犯双太岁", "犯双份太岁", "犯太岁双份", "犯太岁两份", "犯太岁二份", "犯太岁双份", "犯太岁一份", "犯太歲一份"],
+            "清水寺": ["清水寺", "清水廟", "清水庙", "清水寺符", "清水庙符", "清水廟符"],
+            "补财库": ["补财库", "補財庫", "财库", "財庫", "补财库符", "補財庫符", "财库符", "財庫符", "财库桶", "財庫桶", "补财库桶", "補財庫桶", "补财桶", "補財桶", "补财筒", "補財筒", "财库筒", "財庫筒", "补财库筒", "補財庫筒", "补财", "補財", "补财符", "補財符"],
+            "消灾": ["北斗经消灾", "北斗經消災", "北斗经消灾符", "北斗經消災符", "北斗消灾", "北斗消灾符", "北斗消灾福", "北斗消災", "北斗消災符", "北斗消災福", "北斗", "消灾", "消灾符", "消灾福", "消災", "消災符", "消災福", "化凶星", "化解凶星", "化解兇星", "化兇星", "化凶星符", "化解凶星符", "化解兇星符", "化兇星符"],
+            "健康": ["接健康符", "接健康福", "接健康桶", "接健康筒", "接健康", "健康福", "健康符", "健康桶", "健康筒", "健康"],
+            "接贵人": ["接贵人", "贵人", "迎贵人", "接貴人", "貴人", "迎貴人", "接贵人符", "贵人符", "迎贵人符", "接貴人符", "貴人符", "迎貴人符", "请贵人", "請貴人", "请貴人", "請贵人", "请贵人符", "請貴人符", "请貴人符", "請贵人符"],
+            "学业": ["学业事业符", "學業事業符", "学业符", "事业符", "学业", "事业", "學業符", "事業符", "學業", "事業"],
+            "爱情": ["爱情符", "爱情桶", "爱情筒", "爱情", "愛情符", "愛情桶", "愛情筒", "愛情"],
+            "踩小人": ["防小人", "防小人符", "踩小人", "送穷鬼", "送窮鬼", "送穷鬼踩小人", "送窮鬼踩小人", "送穷鬼踩小人符", "送窮鬼踩小人符", "踩小人符"],
+            "放鱼": ["放鱼", "放魚", "放生", "放生鱼", "放生魚"],
+            "香油": ["捐香油", "捐香油", "香油", "捐油", "添油"],
+        };
+        const LONGLIAN_KEYS_RAW = ["龙莲寺化太岁", "龙莲寺犯太岁", "龙莲寺太岁", "龙莲寺化太歲", "龙莲寺犯太歲", "龙莲寺太歲", "龙莲寺", "龍蓮寺化太岁", "龍蓮寺犯太岁", "龍蓮寺太岁", "龍蓮寺化太歲", "龍蓮寺犯太歲", "龍蓮寺太歲", "龍蓮寺"];
+        const EXTRA_LABELS_TRAD = ["性別", "歲數", "周歲", "出生時間", "時辰", "吉時", "號", "出生年月日陽曆", "出生年月日陰曆", "出生年月日新曆", "出生年月日國曆", "陽曆生辰", "陰曆生辰", "農曆生辰", "新曆生辰", "國曆生辰", "客戶資訊", "客户资讯"];
+        const _WISH_GROUPS = [[["学业", "事业", "學業", "事業"], ["有成", "进步", "進步", "顺利", "順利", "成功", "兴旺", "興旺", "发达", "發達", "高升", "精进", "精進", "腾飞", "騰飛", "顺遂", "順遂", "稳定", "穩定", "运势", "運勢", "运", "運", "蒸蒸日上", "步步高升", "平顺", "平順", "亨通", "如意", "圆满", "圓滿", "提升", "大成", "腾达", "騰達", "有起色", "双丰收", "雙豐收", "更上一层楼", "更上一層樓"]], [["贵人", "貴人"], ["相助", "多助", "扶持", "提携", "提攜", "帮助", "幫助", "运", "運", "缘", "緣", "来助", "來助", "出现", "出現", "临门", "臨門", "助力", "相扶", "多多", "常伴", "常在", "相伴", "降临", "降臨", "指路", "提拔", "相护", "相護", "护佑", "護佑", "庇佑", "多相助", "来相助", "來相助", "不断", "不斷"]], [["爱情", "愛情"], ["甜蜜", "顺利", "順利", "美满", "美滿", "圆满", "圓滿", "幸福", "和睦", "长久", "長久", "稳定", "穩定", "运势", "運勢", "运", "運", "如意", "顺遂", "順遂", "美好", "开花", "開花", "双丰收", "雙豐收", "和美", "顺心", "順心", "平顺", "平順", "价更高", "價更高", "诚可贵", "誠可貴", "常青", "更甜", "甜甜蜜蜜", "圆圆满满"]], [["财库", "財庫"], ["充盈", "丰盈", "豐盈", "丰厚", "豐厚", "满满", "滿滿", "稳固", "穩固", "兴旺", "興旺", "旺盛", "充足", "富足", "饱满", "飽滿", "厚实", "厚實", "广进", "廣進", "丰足"]], [["太岁", "太歲"], ["不犯", "保佑", "庇佑", "护佑", "護佑", "平安", "吉祥"]], [["消灾", "消災"], ["免难", "免難", "解难", "解難", "解厄", "延寿", "延壽", "增福", "添福", "吉祥", "祈福", "解困", "避难", "避難", "免灾", "免災"]]];
+        const _WISH_INFIX = ["多多", "常常", "越来越", "越來越", "永远", "永遠", "一直", "总是", "總是", "多", "更", "常", "总", "總", "很", "会", "會", "能", "将", "將", "必"];
+        const _WISH_SHARED_SUFFIX = ["越来越好", "越來越好", "更好", "更高", "更上一层楼", "更上一層樓", "一切顺利", "一切順利", "一帆风顺", "一帆風順", "事事顺心", "事事順心", "如愿以偿", "如願以償", "如愿", "如願", "美梦成真", "美夢成真", "成真", "节节高", "節節高", "日日高升", "步步高升", "平平安安", "顺顺利利", "順順利利", "开开心心", "開開心心", "红红火火", "紅紅火火", "更旺", "更强", "更強"];
+        const _WISH_HEALTH_SUFFIX = ["平安", "快乐", "快樂", "长寿", "長壽", "顺利", "順利", "如意", "安康", "喜乐", "喜樂", "幸福", "无忧", "無憂", "美满", "美滿", "长久", "長久", "成长", "成長", "顺遂", "順遂", "平顺", "平順"];
+        const EXTRA_WISH_PHRASES = ["爱情事业双丰收", "事业爱情双丰收", "學業事業雙豐收", "学业事业双丰收", "事业学业双丰收"];
+        const _ATT_NAME_STOP = ["平安", "顺利", "健康", "如意", "快乐", "成功", "发财", "相助", "有成", "保佑", "吉祥", "圆满", "符", "福", "桶", "筒", "纸", "紙", "一份", "两份", "三份", "四份", "五份"];
+        const NAME_EXCLUSIONS = ["皇恩寺", "属相", "屬相", "生肖", "属", "屬", "性别", "性別", "农历", "農曆", "阴历", "陰曆", "旧历", "舊曆", "新历", "新曆", "国历", "國曆", "阳历", "陽曆", "年份", "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "歲數", "出生年月日", "出生年月日阳历", "出生年月日陽曆", "生日", "生辰", "时辰", "時辰"];
+        const QINGSHUI_KEYS_RAW = ["清水寺健康符", "清水寺健康", "清水寺健康", "清水健康", "清水健康", "清水廟健康符", "清水廟健康", "清水廟健康", "清水庙健康符", "清水庙健康", "清水庙健康", "清水寺", "清水廟", "清水庙"];
+        const LABELS_PERSON = ["皇恩寺", "是", "吉时", "吉", "性别", "性别", "属性", "屬性", "属相", "屬相", "生肖", "属", "屬", "出生年月日阳历", "出生年月日阴历", "出生年月日新历", "出生年月日国历", "出生年月日", "出生年月", "出生日期", "出生年", "生日", "年月日", "年月", "日期", "阳历生辰", "阴历生辰", "农历生辰", "新历生辰", "国历生辰", "生辰", "农历", "農曆", "阴历", "陰曆", "旧历", "舊曆", "新历", "新曆", "国历", "國曆", "年份", "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "名字", "姓名", "真实姓名", "真實姓名", "名称", "名稱", "客户", "客戶", "时辰", "時間", "时间", "阳历", "陽曆", "号", "资料", "資料", "客户信息", "客戶信息", "男女", "项目", "女性", "男性", "女士", "男士", "女孩子", "男孩子", "女生", "男生", "女孩", "男孩"];
+        const LABELS_XIAOREN = ["皇恩寺", "是", "吉时", "吉", "性别", "属性", "屬性", "属相", "屬相", "生肖", "属", "屬", "出生年月日阳历", "出生年月日阴历", "出生年月日新历", "出生年月日国历", "出生年月日", "出生年月", "出生日期", "出生年", "生日", "年月日", "年月", "日期", "阳历生辰", "阴历生辰", "农历生辰", "新历生辰", "国历生辰", "生辰", "农历", "農曆", "阴历", "陰曆", "旧历", "舊曆", "新历", "新曆", "国历", "國曆", "年份", "出生", "虚岁", "虛歲", "年龄", "年齡", "岁数", "名字", "姓名", "真实姓名", "真實姓名", "名称", "名稱", "客户", "客戶", "时辰", "時間", "时间", "阳历", "陽曆", "号", "资料", "資料", "客户信息", "客戶信息", "男女", "女性", "男性", "女士", "男士", "女孩子", "男孩子", "女生", "男生", "女孩", "男孩"];
+        const LENGTH_RULES = [["接贵人", [[4, 22]]], ["健康", [[4, 22]]], ["爱情", [[4, 22]]], ["学业", [[4, 22]]], ["补财库", [[4, 22]]], ["消灾", [[5, 8], [6, 8]]], ["化太岁", [[12, 8]]], ["龙莲太岁", [[12, 8]]]];
+
+        // 【龙莲太岁】龙莲寺 / 龙莲寺化太岁 / 龙莲寺犯太岁 / 龙莲寺太岁 都判断为龙莲太岁（填表规则同化太岁）
+        const LONGLIAN_KEYS = _byLenDesc(LONGLIAN_KEYS_RAW);
+        KEYWORDS['龙莲太岁'] = LONGLIAN_KEYS.slice();
+        // 放鱼同款逻辑的项目（照搬原文）：放鱼(桶) / 香油(份)
+        const FANGYU_LIKE = ['放鱼', '香油'];
+
+        // 【符纸关键字】所有项目同步支持 "XX符纸"
+        (function _addPaperKeywords() {
+            for (const p_type of Object.keys(KEYWORDS)) {
+                if (p_type === '放鱼' || p_type === '香油') continue;
+                const keys = KEYWORDS[p_type];
+                const extra = [];
+                for (const k of keys) {
+                    if (/[桶福筒]$/.test(k)) continue;
+                    if (k.endsWith('符')) extra.push(k + '纸', k + '紙');
+                    else extra.push(k + '符纸', k + '符紙');
+                }
+                for (const e of extra) if (!keys.includes(e)) keys.push(e);
+            }
+        })();
+
+        // 【忽略符号】破折号以及 emoji / 各类图形符号只是装饰，不输出到"其他"的红字里
+        const IGNORED_SYMBOLS_RE = /[—–―─━←-⇿⌀-⏿①-⓿■-➿⤀-⥿⬀-⯿️‍⃣\u{1f000}-\u{1faff}]/gu;
+
+        // 【符号一律忽略】只要是 Unicode 标点(P*)或符号(S*)，以及各种不可见/空白控制字符，都当作空格
+        const _SYM_RE = /[\p{P}\p{S}\p{Cc}\p{Cf}\p{Zs}\p{Zl}\p{Zp}]/u;
+        function stripIgnoredSymbols(s) {
+            let out = '';
+            for (const ch of s) out += _SYM_RE.test(ch) ? ' ' : ch;
+            return out;
+        }
+
+        // 【数字符号序号忽略】1️⃣ 2️⃣ 🔟 ①②③ ⑴ ❶ 等
+        const NUM_EMOJI_RE = /[0-9#*]️?⃣|\u{1f51f}|[①-⒛⓪-⓿❶-➓]️?/gu;
+        // 【表情符号一律忽略】（➕➖➗✖ ❗❕ 不处理）
+        const EMOJI_RE = /[\u{1f000}-\u{1faff}☀-✕✗-❔❘-➔➘-➿⬅-⬇⬛⬜⭐⭕↔-↙↩↪⌚⌛⌨⏏⏩-⏳⏸-⏺▪▫▶◀◻-◾⤴⤵〰〽㊗㊙‼⁉™ℹⓂ️︎‍⃣]/gu;
+
+        // 【特殊数字当份数】2️⃣份 / ②份 / ❷份 …（1-9）
+        const _EMOJI_DIGIT = {};
+        for (let _i = 1; _i < 10; _i++) {
+            for (const _base of [0x2460, 0x2474, 0x2488, 0x2776, 0x2780, 0x278a]) {
+                _EMOJI_DIGIT[String.fromCharCode(_base + _i - 1)] = String(_i);
+            }
+        }
+        const _EMOJI_DIGIT_PAT = "(?:([1-9])️?⃣|([①-⑨⑴-⑼⒈-⒐❶-❾➀-➈➊-➒])️?)";
+        function _emojiDigitQty(s) {
+            return s.replace(_rc(_EMOJI_DIGIT_PAT + String.raw`(?=[ \t]*[份桶位])`, 'g'),
+                (m0, g1, g2) => g1 || _EMOJI_DIGIT[g2] || ' ');
+        }
+
+        // 【年份与属相连写】1958属狗，正月二十 / 1958属狗，5.8
+        const _YEAR_SHU_SRC = String.raw`(?<!\d)(\d{4})年?生?[ \t]*([属屬][鼠牛虎兔龙龍蛇马馬羊猴鸡雞狗猪豬]的?)[ \t]*[,，、]?[ \t]*`;
+        function _yearShuFix(s) {
+            let out = '', pos = 0;
+            for (const m of s.matchAll(_rc(_YEAR_SHU_SRC, 'g'))) {
+                const mEnd = m.index + m[0].length;
+                const rest = s.slice(mEnd);
+                const y = m[1], shu = m[2];
+                const md = rest.match(_rc(String.raw`^(\d{1,2})[.\-/·](\d{1,2})(?![\d.])`));
+                const mm = rest.match(_rc(String.raw`^(?:闰|閏)?(?:正|冬|腊|臘|[一二三四五六七八九十]{1,2}|\d{1,2})月`));
+                const ml = rest.match(_rc(String.raw`^(?:农历|農曆|阴历|陰曆|旧历|舊曆|阳历|陽曆|新历|新曆|国历|國曆)`));
+                if (ml) {
+                    out += s.slice(pos, m.index) + ` ${shu} ${y}`;
+                    pos = mEnd;
+                } else if (md) {
+                    out += s.slice(pos, m.index) + ` ${shu} ${y}年${md[1]}月${md[2]}日 `;
+                    pos = mEnd + md[0].length;
+                } else if (mm) {
+                    out += s.slice(pos, m.index) + ` ${shu} ${y}年`;
+                    pos = mEnd;
+                }
+            }
+            out += s.slice(pos);
+            return out;
+        }
+
+        // 【美式日期】05/15/1972：最后四位是年
+        function _mdyFix(s) {
+            return s.replace(_rc(String.raw`(?<!\d)(\d{1,2})[/.\-](\d{1,2})[/.\-]((?:19|20)\d{2})(?!\d)`, 'g'), (m0, g1, g2, y) => {
+                let a = _pyInt(g1), b = _pyInt(g2);
+                if (a > 12 && b >= 1 && b <= 12) { const t = a; a = b; b = t; }
+                if (!(a >= 1 && a <= 12 && b >= 1 && b <= 31)) return m0;
+                return ` ${y}年${a}月${b}日 `;
+            });
+        }
+
+        function _stripQifu(s) {
+            // “祈福”在项目名称那一行、或排在项目名称前面时去掉，不当姓名也不进红字
+            if (!s.includes("祈福")) return s;
+            const pos = ALL_PRODUCT_KEYWORDS.filter(k => s.includes(k)).map(k => s.indexOf(k));
+            if (!pos.length) return s;
+            const first = Math.min(...pos);
+            const out = [];
+            let start = 0;
+            for (let ln of s.split("\n")) {
+                const end = start + ln.length;
+                if (ln.includes("祈福") && ALL_PRODUCT_KEYWORDS.some(k => ln.includes(k))) {
+                    ln = _replAll(ln, "祈福", " ");
+                } else if (ln.includes("祈福") && start < first) {
+                    ln = _replAll(ln, "祈福", " ");
+                }
+                out.push(ln);
+                start = end + 1;
+            }
+            return out.join("\n");
+        }
+
+        function stripNumberEmoji(s) {
+            s = _emojiDigitQty(s);
+            s = _mdyFix(s);
+            s = _yearShuFix(s);
+            s = s.replace(/委托人?|代请|代請|代拜|选填|選填/g, " ");
+            s = _replAll(s, "出生于", "出生年月日");
+            s = _stripQifu(s);
+            s = s.replace(NUM_EMOJI_RE, " ");
+            s = s.replace(EMOJI_RE, " ");
+            // 【隐形方向符还原】RLO(U+202E)…PDF(U+202C)：按显示顺序还原，再删掉所有隐形字符
+            s = s.replace(/‮([^‬]*)(?:‬|$)/g, (m0, g1) => Array.from(g1).reverse().join(''));
+            s = s.replace(/[​-‏‪-‮⁠-⁩﻿͏]/g, "");
+            // 【提供自动忽略】提供姓名=姓名，提供生日=生日
+            s = _replAll(s, "提供", " ");
+            return s;
+        }
+
+        // 【农历片段】"农历冬月初十"：农历标签属于它后面的这个月日
+        const _LUNAR_FRAG_SRC = String.raw`(农历|農曆|阴历|陰曆|旧历|舊曆)[ \t]*((?:闰|閏)?(?:正|冬|腊|臘|[一二三四五六七八九十]{1,2}|\d{1,2})月[ \t]*(?:初[一二三四五六七八九十]|二十[一二三四五六七八九]?|三十|[十廿卅][一二三四五六七八九]?|[一二三四五六七八九]|\d{1,2})(?:日|号|號)?)`;
+        const FRAG_PH = "";
+        // 【阳历片段】第一个日期是农历/阴历时，后面没有年份的“阳历11月3号”：整段原样放进“其他”红字里
+        const _SOLAR_FRAG_SRC = String.raw`(阳历|陽曆|新历|新曆|国历|國曆)[ \t]*((?:闰|閏)?\d{1,2}月[ \t]*(?:初[一二三四五六七八九十]|二十[一二三四五六七八九]?|三十|[十廿卅][一二三四五六七八九]?|[一二三四五六七八九]|\d{1,2})(?:日|号|號)?)`;
+        const SOLAR_PH = "";
+
+        // 汇总所有名称关键词，用于精准识别名称行
+        let ALL_PRODUCT_KEYWORDS = [];
+        for (const keys of Object.values(KEYWORDS)) ALL_PRODUCT_KEYWORDS.push(...keys);
+        ALL_PRODUCT_KEYWORDS.push(...[
+            "清水寺", "清水廟", "清水庙", "清水寺符", "清水庙符", "清水廟符",
+            "四方贵人", "四方貴人", "八方贵人", "八方貴人",
+            "踩小人", "送穷鬼", "送窮鬼", "放鱼", "放魚", "放生", "放生鱼", "放生魚"
+        ], ...LONGLIAN_KEYS);
+        ALL_PRODUCT_KEYWORDS = _byLenDesc(_uniq(ALL_PRODUCT_KEYWORDS));
+
+        // 统一定义前置数量匹配正则前缀 (支持 "2份健康", "两健康" 或 "双份健康")
+        const PREFIX_QTY_PATTERN = String.raw`(?:(?:([一二两三四五六七八九十双雙]+|[0-9]+)\s*(?:份|桶|位|(?:(?<=[0-9一二两三四五六七八九十双雙])|(?<=[0-9一二两三四五六七八九十双雙][ \t])|(?<=[0-9一二两三四五六七八九十双雙][ \t]{2}))个)\s*)|(?:(?<![月初廿卅一二两三四五六七八九十双雙])([一二两三四五六七八九十双雙]+)\s*))?`;
+        const PREFIX_QTY_NO_CAPTURE = String.raw`(?:(?:[一二两三四五六七八九十双雙]+|[0-9]+)\s*(?:份|桶|位|(?:(?<=[0-9一二两三四五六七八九十双雙])|(?<=[0-9一二两三四五六七八九十双雙][ \t])|(?<=[0-9一二两三四五六七八九十双雙][ \t]{2}))个)\s*|(?:(?<![月初廿卅一二两三四五六七八九十双雙])[一二两三四五六七八九十双雙]+)\s*)?`;
+        // 量词尾巴：份/桶/位/个（"个"前面必须紧跟数字）
+        const _UNIT_TAIL = String.raw`(?:份|桶|位|(?:(?<=[0-9一二两三四五六七八九十双雙])|(?<=[0-9一二两三四五六七八九十双雙][ \t])|(?<=[0-9一二两三四五六七八九十双雙][ \t]{2}))个)`;
+        const _MULT_SIGNS = "[*+＋➕✖✕✗✘＊⨯×xXｘＸ·・]";
+
+        // 【项目后冒号忽略】"学业符1：" "化太岁1:" 这种冒号只是分隔符，不是时间
+        const _PRODUCT_ALT = ALL_PRODUCT_KEYWORDS.map(escapeRegExp).join("|");
+        const _PRODUCT_COLON_SRC = PREFIX_QTY_NO_CAPTURE + String.raw`(?:双|雙)?[！!❗]*(?:` + _PRODUCT_ALT + String.raw`)[！!❗]*\s*(?:各)?\s*` +
+            String.raw`(?:` + _MULT_SIGNS + String.raw`?\s*[0-9一二两三四五六七八九十双雙]+)?\s*` + _UNIT_TAIL + String.raw`?[！!❗]*\s*[:：]` +
+            String.raw`(?![ \t]*\d{1,2}(?![\d岁歲年月日号虚虛]))`;
+
+        // 【接贵人·几方】接4方贵人 / 四方贵人 / 贵人四方 / 接贵人八方 ……  N方 = N份
+        const _FANG_NUM = String.raw`(?:[一二两三四五六七八九十]|\d{1,2})`;
+        const _FANG_GUIREN_SRC = String.raw`(?:接|迎|请|請)?[ \t]*(?:(` + _FANG_NUM + String.raw`)[ \t]*方[ \t]*(?:贵人|貴人)|(?:贵人|貴人)[ \t]*(` + _FANG_NUM + String.raw`)[ \t]*方)[！!❗]*` +
+            String.raw`|(?:接|迎|请|請)[ \t]*(` + _FANG_NUM + String.raw`)[ \t]*份(?:贵人|貴人)[！!❗]*`;
+
+        // 【第二个同类词不去掉】学业 / 健康项目：红字里出现第二个同类关键词时原样保留
+        const KEEP_SECOND_TYPES = { '学业': ['学业', '事业', '學業', '事業'], '健康': ['健康'] };
+        const KEEP_KEYS_SET = {};
+        for (const t of Object.keys(KEEP_SECOND_TYPES)) KEEP_KEYS_SET[t] = new Set(KEYWORDS[t]);
+
+        // 【愿望短语保护】学业有成 / 贵人相助 / 身体健康 ……只是祝愿，不算项目；整理红字时整句原样保留
+        function _buildWishRe() {
+            const alt = words => _byLenDesc(_uniq(words)).map(escapeRegExp).join("|");
+            const parts = [];
+            const infix = "(?:" + alt(_WISH_INFIX) + ")?";
+            for (const [bases, sufs] of _WISH_GROUPS) {
+                parts.push("(?:" + alt(bases) + ")" + infix + "(?:" + alt(sufs.concat(_WISH_SHARED_SUFFIX)) + ")");
+            }
+            parts.push("(?:身体|身體|身心|平安)健康(?:" + alt(_WISH_HEALTH_SUFFIX.concat(_WISH_SHARED_SUFFIX)) + ")?");
+            parts.push("健康" + infix + "(?:" + alt(_WISH_HEALTH_SUFFIX.concat(_WISH_SHARED_SUFFIX)) + ")");
+            parts.push("(?:遇到|遇见|遇見|遇|碰到|碰上|得)(?:贵人|貴人)");
+            const guarded = "(?<![接迎请請化犯补補送踩放])(?:" + parts.join("|") + ")(?![符福桶纸紙])";
+            const extra = alt(EXTRA_WISH_PHRASES);
+            return guarded + (extra ? ("|(?:" + extra + ")") : "");
+        }
+        const _WISH_SRC = _buildWishRe();
+        // 带标签的整行愿望：愿望：贵人多相助，爱情价更高
+        const _WISH_LABEL_SRC = String.raw`((?:愿望|願望|心愿|心願|祝愿|祝願|祈愿|祈願|许愿|許願)[ \t]*[:：][ \t]*)([^\n]+)`;
+        const _WISH_LABEL_UNSAFE_SRC = "[0-9A-Za-z０-９符福桶纸紙接迎请請化犯补補送踩放]";
+
+        function maskWishPhrases(s, store) {
+            // store 不传：把愿望短语换成空格（只用于识别项目）；
+            // store 传 Map：换成私有占位字符（整句受保护），之后用 restoreWishPhrases 还原
+            if (!s) return s;
+            const unsafe = _rc(_WISH_LABEL_UNSAFE_SRC);
+            if (!store) {
+                s = s.replace(_rc(_WISH_LABEL_SRC, 'g'), (m0, g1, g2) => unsafe.test(g2) ? m0 : g1 + " ");
+                return s.replace(_rc(_WISH_SRC, 'g'), " ");
+            }
+            s = s.replace(_rc(_WISH_LABEL_SRC, 'g'), (m0, g1, g2) => {
+                if (unsafe.test(g2)) return m0;
+                let ch = store.get(g2);
+                if (ch === undefined) { ch = String.fromCharCode(0xE100 + store.size); store.set(g2, ch); }
+                return g1 + ch;
+            });
+            return s.replace(_rc(_WISH_SRC, 'g'), (w) => {
+                let ch = store.get(w);
+                if (ch === undefined) { ch = String.fromCharCode(0xE100 + store.size); store.set(w, ch); }
+                return ch;
+            });
+        }
+        function restoreWishPhrases(s, store) {
+            for (const [w, ch] of store) s = _replAll(s, ch, w);
+            return s;
+        }
+
+        // 【沿用上一段项目时，客户信息后面单独写的份数】
+        const _BLOCK_TAIL_QTY_SRC = String.raw`(?<![\d一二两三四五六七八九十])([一二两三四五六七八九十]|十[一二三四五六七八九]?|\d{1,2})[ \t]*份(?![一-龥])`;
+        function inheritedQtyProducts(block, inherited) {
+            const ms = Array.from(block.matchAll(_rc(_BLOCK_TAIL_QTY_SRC, 'g'))).map(m => m[1]);
+            if (ms.length !== 1) return inherited;
+            const q = formatQty(ms[0]);
+            return inherited.map(p => (FANGYU_LIKE.includes(p.type) || p.type === '清水寺' || p.type === '龙莲太岁') ? p : Object.assign({}, p, { qty: q }));
+        }
+
+        function formatQty(q) {
+            if (!q) return "一份";
+            let num_str = String(q).trim();
+            if (num_str === "双" || num_str === "雙") return "两份";
+            if (_isDigitStr(num_str)) {
+                const n = _pyInt(num_str);
+                if (n >= 1 && n <= 10) num_str = CN_NUMS[n];
+                else return "一份";
+            } else {
+                const valid_cn = ["一", "二", "两", "三", "四", "五", "六", "七", "八", "九", "十", "双", "雙"];
+                if (!valid_cn.includes(num_str)) return "一份";
+            }
+            if (num_str === "二") num_str = "两";
+            if (num_str === "双" || num_str === "雙") num_str = "两";
+            return num_str + (num_str.endsWith("份") ? "" : "份");
+        }
+
+        function _extractProductsCore(text) {
+            text = stripNumberEmoji(text);
+            const products = [];
+            let scanText = text;
+
+            const qingshui_keys = _byLenDesc(_uniq(QINGSHUI_KEYS_RAW));
+            let matched_qingshui = false;
+            for (const qk of qingshui_keys) {
+                if (scanText.includes(qk)) {
+                    matched_qingshui = true;
+                    scanText = _replAll(scanText, qk, "");
+                }
+            }
+            if (matched_qingshui) products.push({ type: '清水寺', qty: "一份" });
+
+            let matched_longlian = false;
+            for (const lk of LONGLIAN_KEYS) {
+                if (scanText.includes(lk)) {
+                    matched_longlian = true;
+                    scanText = _replAll(scanText, lk, "");
+                }
+            }
+            if (matched_longlian) products.push({ type: '龙莲太岁', qty: "" });
+
+            for (const _fm of scanText.matchAll(_rc(_FANG_GUIREN_SRC, 'g'))) {
+                products.push({ type: '接贵人', qty: formatQty(_fm[1] || _fm[2] || _fm[3]) });
+            }
+
+            for (const p_type of Object.keys(KEYWORDS)) {
+                if (p_type === '清水寺') continue;
+                const sorted_keys = _byLenDesc(KEYWORDS[p_type]);   // 长词优先于短词
+                for (const key of sorted_keys) {
+                    if (!scanText.includes(key)) continue;   // 文本里根本没有这个词，直接跳过（提速，结果不变）
+                    if (scanText.includes(`双${key}`) || scanText.includes(`雙${key}`) || scanText.includes(`${key}双份`) || scanText.includes(`${key}雙份`) || scanText.includes(`${key}双桶`) || scanText.includes(`${key}雙桶`) || scanText.includes(`${key}双位`) || scanText.includes(`${key}雙位`) || ((key.includes("双") || key.includes("雙") || key.includes("两份")) && scanText.includes(key))) {
+                        const qty = p_type === '放鱼' ? "两桶" : "两份";
+                        products.push({ type: p_type, qty: qty });
+                    } else {
+                        const regex = _rc(String.raw`${PREFIX_QTY_PATTERN}${escapeRegExp(key)}[！!❗]*\s*(各)?\s*(?:(?![+＋➕✖✕✗✘＊⨯]\s*[0-9一二两三四五六七八九十双雙]+\s*(?:份|桶|位|个)?\s*(?:${_PRODUCT_ALT}))${_MULT_SIGNS}?\s*([0-9一二两三四五六七八九十双雙]+))?\s*${_UNIT_TAIL}?[！!❗]*`, 'g');
+                        for (const match of scanText.matchAll(regex)) {
+                            const qty_str = match[4] || match[1] || match[2];
+                            let fmt_qty = formatQty(qty_str);
+                            if (p_type === '放鱼') fmt_qty = fmt_qty.replace('份', '桶');
+                            products.push({ type: p_type, qty: fmt_qty });
+                        }
+                    }
+                }
+            }
+
+            const unique = [];
+            const seen = new Set();
+            for (const p of products) {
+                if (!seen.has(p.type)) { unique.push(p); seen.add(p.type); }
+            }
+
+            const has_fangyu = unique.some(p => FANGYU_LIKE.includes(p.type));
+            if (has_fangyu) {
+                let fangyu_pos = -1;
+                const fkws = [];
+                for (const t of FANGYU_LIKE) if (unique.some(p => p.type === t)) fkws.push(...KEYWORDS[t]);
+                for (const kw of fkws) {
+                    const pos = text.indexOf(kw);
+                    if (pos !== -1) {
+                        if (fangyu_pos === -1 || pos < fangyu_pos) fangyu_pos = pos;
+                    }
+                }
+                const filtered_unique = [];
+                for (const p of unique) {
+                    if (FANGYU_LIKE.includes(p.type)) {
+                        filtered_unique.push(p);
+                    } else {
+                        let other_kws = KEYWORDS[p.type] || [];
+                        if (p.type === '清水寺') {
+                            other_kws = qingshui_keys;
+                        } else if (p.type === '接贵人') {
+                            other_kws = KEYWORDS['接贵人'].concat(['四方贵人', '四方貴人', '4方贵人', '4方貴人', '八方贵人', '八方貴人', '8方贵人', '8方貴人']);
+                        }
+                        let other_pos = -1;
+                        for (const kw of other_kws) {
+                            const pos = text.indexOf(kw);
+                            if (pos !== -1) {
+                                if (other_pos === -1 || pos < other_pos) other_pos = pos;
+                            }
+                        }
+                        if (other_pos !== -1 && other_pos < fangyu_pos) filtered_unique.push(p);
+                    }
+                }
+                return filtered_unique;
+            }
+            return unique;
+        }
+
+        function extractProductsFromBlock(text) {
+            // 【愿望不算项目】先把愿望短语屏蔽掉再识别项目；屏蔽后一个项目都没有时，退回原来的识别方式
+            text = stripNumberEmoji(text);
+            const masked = maskWishPhrases(text);
+            if (masked !== text) {
+                const prods = _extractProductsCore(masked);
+                if (prods.length) return prods;
+            }
+            return _extractProductsCore(text);
+        }
+
+        // 【数量词不是姓名】“贵人 一份。”里去掉项目词后剩下“一份”，不能把它当成姓名
+        const _QTY_HEAD_RE = /^[一二两三四五六七八九十双雙]{1,3}(?:份|桶|位|个)/;
+        // 【属相不是姓名】“属鸡 阳历2005.6.9何浩然 男”里的“属鸡”是属相
+        const _SHU_ZODIAC_RE = /^[属屬][鼠牛虎兔龙龍蛇马馬羊猴鸡雞狗猪豬]/;
+        // 【标签词不是姓名】"性别男""生肖牛""属相羊""年龄35"；含 早上/晚上/中午/凌晨 等时间词：它们是时间规则，不是姓名
+        const _TIME_WORD_HEAD_RE = /^(?:[子丑寅卯辰巳午未申酉戌亥吉][时時]|[子丑寅卯辰巳午未申酉戌亥]时辰)/;
+        const _LABEL_HEAD_RE = /^(?:性别|性別|生肖|属相|屬相|年龄|年齡|出生|生日|生辰|时辰|時辰|凌晨|深夜|半夜|早上|早晨|上午|中午|下午|晚上|傍晚|夜里)/;
+
+        // 【姓名中间有空格】“郑 爽 .1981.1.8 女 .猴”
+        const _SPLIT_NAME_SRC = String.raw`^([ \t]*)([一-龥])[ \t　]+([一-龥]{1,2})(?=[ \t　.,，。、:：;；\d]|$)`;
+        const _SPLIT_NAME_BAD = new Set("男女属屬性生年月日岁歲时時符福桶筒份位");
+        function _joinSplitNames(text) {
+            return text.replace(_rc(_SPLIT_NAME_SRC, 'gm'), (m0, g1, a, b) => {
+                if (_SPLIT_NAME_BAD.has(a) || _SPLIT_NAME_BAD.has(b[0]) || (a + b) === ZODIACS) return m0;
+                if (["贵人", "貴人", "太岁", "太歲"].some(k => (a + b).includes(k))) return m0;
+                return g1 + a + b;
+            });
+        }
+
+        function extractPersonInfo(text, keepType) {
+            const info = _extractPersonInfoCore(text, keepType);
+            if (info.name === "") {
+                const joined = _joinSplitNames(text);
+                if (joined !== text) {
+                    const info2 = _extractPersonInfoCore(joined, keepType);
+                    if (info2.name !== "") return info2;
+                }
+            }
+            return info;
+        }
+
+        const _CALENDAR_KEYS = ['农历', '農曆', '阴历', '陰曆', '旧历', '舊曆', '新历', '新曆', '国历', '國曆', '阳历', '陽曆'];
+        // 【日期分隔符大全】- . / 各种长短横线、全角点、斜杠、下划线、波浪线……年月日里混着用也可以（如 1959-4–14）
+        const _DSEP = String.raw`\-‐‑‒–—―−－﹣⁃./／\\＼．。·・•_~～`;
+        const _CAL_PATTERN = "((?:" + _CALENDAR_KEYS.join("|") + ")?)" + String.raw`\s*`;
+        const _MONTH_PATTERN = String.raw`(闰?[一二三四五六七八九十\d]{1,2}月|正月|腊月|冬月|\d{1,2})`;
+        const _DATE_LABEL_PATTERN = "(?:生辰|出生年月日|出生日期|出生年月|出生年|出生|生日)?";
+        // 【年月之间夹历法标签】如 "1988年阳历6月24"
+        const _MID_CAL_PATTERN = "(?:((?:" + _CALENDAR_KEYS.join("|") + ")" + String.raw`[ \t]*))?`;
+
+        const _DATE_SRC = _CAL_PATTERN + _DATE_LABEL_PATTERN + String.raw`\s*[:：]?\s*(\d{4})(?:(?:[ \t]*年[ \t]*生?[ \t]*|[ \t]*(?=` + _CALENDAR_KEYS.join("|") + String.raw`))` + _MID_CAL_PATTERN + String.raw`|[ \t]*[` + _DSEP + String.raw`][ \t]*|[ \t]*月[ \t]*(?=[一二三四五六七八九十\d]{1,2}月)|[ \t]*)` + _MONTH_PATTERN + String.raw`(?:[ \t]*月[ \t]*|[ \t]*[` + _DSEP + String.raw`][ \t]*|[ \t]*)(初?[\d一二三四五六七八九十]{1,3})(?:[ \t]*(?:日|号|號))?`;
+        const _YMD_SRC = _CAL_PATTERN + _DATE_LABEL_PATTERN + String.raw`\s*[:：]?\s*(\d{4})[` + _DSEP + String.raw`年]?(\d{2})[` + _DSEP + String.raw`月]?(\d{2})(?:[ \t]*(?:日|号|號))?`;
+        const _LOOSE_DATE_SRC = _CAL_PATTERN + _DATE_LABEL_PATTERN + String.raw`\s*[:：]?\s*(\d{4})[ \t]*[` + _DSEP + String.raw`,，、]+[ \t]*(\d{1,2})[ \t]*[` + _DSEP + String.raw`,，、]+[ \t]*(\d{1,2})(?!\d)(?:[ \t]*(?:日|号|號))?`;
+        // 【两位数年份】"83年""61年"
+        const _SHORT_YEAR_SRC = _CAL_PATTERN + _DATE_LABEL_PATTERN + String.raw`\s*[:：]?\s*(?<!\d)(\d{2})(?!\d)[ \t]*年[ \t]*生?`;
+        const _SHORT_MD_SRC = "((?:" + _CALENDAR_KEYS.join("|") + ")?)" + String.raw`[ \t]*` +
+            String.raw`(闰?[一二三四五六七八九十\d]{1,2}月|正月|腊月|冬月|\d{1,2}(?=[ \t]*[` + _DSEP + String.raw`]))[ \t]*(?:[` + _DSEP + String.raw`][ \t]*)?` +
+            String.raw`(初?[\d一二三四五六七八九十廿卅]{1,3})(?:[ \t]*(?:日|号|號))?(?![\d岁歲])`;
+        const _DATE_SUFFIX_CAL_SRC = String.raw`^[ \t]*[)）】\]]?[ \t]*(农历|農曆|阴历|陰曆|旧历|舊曆|新历|新曆|国历|國曆|阳历|陽曆)(?![ \t]*[0-9一二三四五六七八九十闰閏正腊冬])`;
+        const _AGE_SRC = String.raw`(?:(\d{4})[ \t]*年[ \t]*)?(年龄|年齡|虚岁|虛歲|虚|虛|岁数|歲數|周岁|周歲)[:： \t]*(\d+)(?:[ \t]*(?:周岁|周歲|岁|歲))?|(?:(\d{4})[ \t]*年[ \t]*)?(\d+)[ \t]*(周岁|周歲|岁|歲|虛歲|虚岁|虚|虛)`;
+        const _CLOCK_SRC = String.raw`(凌晨|深夜|半夜|早上|早晨|上午|中午|下午|晚上|傍晚|夜里|早|晚|中)?\s*(\d{1,2})\s*(?:点|时|時|[:：](?=[ \t]*\d{1,2}(?![\d岁歲年月日号虚虛])))\s*(\d{1,2})?\s*分?(?:[ \t]*(左右|多(?!少))|(?<=[点时時分\d])(半)(?![夜年天月日个]))?`;
+        const _CN_CLOCK_SRC = String.raw`(凌晨|深夜|半夜|早上|早晨|上午|中午|下午|晚上|傍晚|夜里|早|晚|中)?\s*([一二三四五六七八九十]{1,2})\s*点\s*([一二三四五六七八九十]{1,2})?\s*分?(?:[ \t]*(左右|多(?!少))|(?<=[点时時分\d])(半)(?![夜年天月日个]))?`;
+
+        // 项目词（含数量）整段删除用的正则，几处写法略有不同
+        function _kwRegexAge(safeKey) {
+            return _rc(String.raw`${PREFIX_QTY_NO_CAPTURE}(双|雙)?[！!❗]*${safeKey}[！!❗]*\s*\d*\s*(?:各)?\s*(?:${_MULT_SIGNS}?\s*[0-9一二两三四五六七八九十双雙]+)?\s*${_UNIT_TAIL}?[！!❗]*`, 'g');
+        }
+        function _kwRegexExtra(safeKey) {
+            return _rc(String.raw`${PREFIX_QTY_NO_CAPTURE}(双|雙)?[！!❗]*${safeKey}[！!❗]*\s*(?:各)?\s*(?:${_MULT_SIGNS}?\s*(?!\d{4})[0-9一二两三四五六七八九十双雙]+(?![0-9一二两三四五六七八九十双雙]*年))?\s*${_UNIT_TAIL}?[！!❗]*`, 'g');
+        }
+        function _kwRegexXiaoren(safeKey) {
+            return _rc(String.raw`${PREFIX_QTY_NO_CAPTURE}(双|雙)?[！!❗]*${safeKey}[！!❗]*\s*(?:各)?\s*(?:${_MULT_SIGNS}?\s*[0-9一二两三四五六七八九十双雙]+)?\s*${_UNIT_TAIL}?[！!❗]*`, 'g');
+        }
+
+        const _DELIMITERS = String.raw` \n\r\t\xA0,.\(\)（），：:;；。+＋!！、/／`;
+        const _NAME_LABELS_ONLY = ["名字", "姓名", "真实姓名", "真實姓名", "客户", "客戶"];
+
+        function _extractPersonInfoCore(text, keepType) {
+            const rawOriginalText = text.replace(NUM_EMOJI_RE, "").replace(EMOJI_RE, "");   // 放鱼/香油项目照搬原文（表情符号不带出来）
+            text = stripNumberEmoji(text);
+            if (text.includes("踩小人") || text.includes("送穷鬼")) {
+                text = _replAll(text, "客户多多", "顾客多多");
+            }
+
+            let name = "";
+            const titlePattern = _rc(String.raw`^(?:名字|姓名|真实姓名|真實姓名|名称|名稱|客户|客戶)[:：\s]*`);
+            const delimiters = _DELIMITERS;
+            const lines = text.split(/\r?\n/);
+
+            for (const line of lines) {
+                const tempLine = line.trim();
+                if (!tempLine) continue;
+                if (titlePattern.test(tempLine)) {
+                    const extracted = tempLine.replace(titlePattern, "").trim();
+                    const m = extracted.match(/^[一-龥]{2,4}/);
+                    if (m) { name = m[0]; break; }
+                }
+            }
+
+            let _shuFallback = "";
+            if (!name) {
+                const allKeys = Object.values(KEYWORDS).flat().map(escapeRegExp).join("|");
+                const pattern = _rc(String.raw`([^${delimiters}]*(?:${allKeys})[^${delimiters}]*)`, 'g');
+                const cleanTextForName = text.replace(pattern, " ");
+                const parts = cleanTextForName.split(_rc(`[${delimiters}]`));
+                for (const p of parts) {
+                    const pClean = p.trim().replace(_QTY_HEAD_RE, "");   // 去掉开头的“一份/两份/四桶”这类数量词
+                    if (_NAME_LABELS_ONLY.includes(pClean)) continue;
+                    const m = pClean.match(/^[一-龥]{2,4}/);
+                    if (m && !NAME_EXCLUSIONS.includes(m[0])) {
+                        if (_TIME_WORD_HEAD_RE.test(m[0])) continue;
+                        if (_SHU_ZODIAC_RE.test(m[0]) || _LABEL_HEAD_RE.test(m[0])) {
+                            if (!_shuFallback) _shuFallback = m[0];   // 属X / "性别男"这类标签先放一边，找不到别的姓名再用它
+                            continue;
+                        }
+                        name = m[0];
+                        break;
+                    }
+                }
+            }
+
+            // 【姓名紧贴项目词】“化太岁齐显峰 1985年3月4日 …”
+            if (!name) {
+                const _flat = Object.values(KEYWORDS).flat();
+                const _allKeysAtt = _byLenDesc(_uniq(_flat)).map(escapeRegExp).join("|");
+                const _attRe = _rc(String.raw`(?:^|[${delimiters}])(?:${_allKeysAtt})(?:\d{1,2}(?:份|桶|位|个)?|[一二两三四五六七八九十双雙]{1,2}(?:份|桶|位|个))?([一-龥]{2,4})(?=$|[${delimiters}\d])`, 'g');
+                for (const _am of text.matchAll(_attRe)) {
+                    const _cand = _am[1];
+                    if (_ATT_NAME_STOP.includes(_cand) || _LABEL_HEAD_RE.test(_cand) || _SHU_ZODIAC_RE.test(_cand)
+                        || _QTY_HEAD_RE.test(_cand) || _flat.some(k => _cand.includes(k))
+                        || _ATT_NAME_STOP.some(w => _cand.startsWith(w))) {
+                        continue;
+                    }
+                    name = _cand;
+                    break;
+                }
+            }
+
+            // 【姓名紧贴日期】“赵宇翔20030927接贵人”
+            if (!name) {
+                let _spaced = text.replace(_rc(String.raw`([一-龥])(?=\d{4})`, 'g'), '$1 ');
+                // 【姓名紧贴完整日期】“阳历2005.6.9何浩然”
+                _spaced = _spaced.replace(_rc(String.raw`(\d{4}[-./]\d{1,2}[-./]\d{1,2})(?=[一-龥])`, 'g'), '$1 ');
+                if (_spaced !== text) {
+                    const _allKeys2 = Object.values(KEYWORDS).flat().map(escapeRegExp).join("|");
+                    const _pat2 = _rc(String.raw`([^${delimiters}]*(?:${_allKeys2})[^${delimiters}]*)`, 'g');
+                    const _clean2 = _spaced.replace(_pat2, " ");
+                    for (const _p2 of _clean2.split(_rc(`[${delimiters}]`))) {
+                        const _pc2 = _p2.trim().replace(_QTY_HEAD_RE, "");
+                        if (_NAME_LABELS_ONLY.includes(_pc2)) continue;
+                        const _m2 = _pc2.match(/^[一-龥]{2,4}/);
+                        if (_m2 && !NAME_EXCLUSIONS.includes(_m2[0]) && !_SHU_ZODIAC_RE.test(_m2[0])) {
+                            name = _m2[0];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!name && _shuFallback) name = _shuFallback;
+            const textWithoutName = !name ? text : _replAll(text, name, "____");
+            let zodiac = "";
+            for (const z of ZODIACS) { if (textWithoutName.includes(z)) { zodiac = z; break; } }
+            if (!zodiac) {
+                // 【名字里的生肖字不算属相】只有名字里是"属龙/屬龍"这种带"属"的写法时，才保留兜底识别
+                for (const z of ZODIACS) {
+                    if (text.includes(z) && (!name || name.includes("属" + z) || name.includes("屬" + z))) { zodiac = z; break; }
+                }
+            }
+
+            let gender;
+            const explicit_gender_match = text.match(/(?:性别|性別|男女)[:：\s]*([男女])/);
+            if (explicit_gender_match) {
+                gender = explicit_gender_match[1];
+            } else {
+                const gender_match = textWithoutName.match(/[男女]/);
+                gender = gender_match ? gender_match[0] : "";
+            }
+
+            let y = "", m = "", d = "", fullDate = "", secondDate = "";
+            const allDates = [];
+
+            const dateRegex = _rc(_DATE_SRC, 'g');
+            for (const mMatch of text.matchAll(dateRegex)) {
+                let prefix = mMatch[1];
+                if (!prefix && mMatch[3]) prefix = mMatch[3].trim();
+                const tempY = mMatch[2];
+                const mRaw = mMatch[4];
+                let tempM = mRaw.replace(/^0/, '');
+                if (/^\d+月$/.test(mRaw.replace(/[０-９]/g, '0'))) tempM = mRaw.replace('月', '').replace(/^0/, '');
+
+                const dayRaw = mMatch[5];
+                const tempD = dayRaw.startsWith('初') ? dayRaw : dayRaw.replace(/^0/, '');
+
+                const fDate = `${tempY}年${tempM}${tempM.includes('月') ? '' : '月'}${tempD}${tempD.includes('日') ? '' : '日'}`;
+                allDates.push({ y: tempY, m: tempM, d: tempD, fullDate: fDate, prefix: prefix, raw: mMatch[0] });
+            }
+
+            const ymdRegex = _rc(_YMD_SRC, 'g');
+            for (const mMatch of text.matchAll(ymdRegex)) {
+                const prefix = mMatch[1];
+                const tempY = mMatch[2];
+                const tempM = mMatch[3].replace(/^0/, '');
+                const tempD = mMatch[4].replace(/^0/, '');
+                const fDate = `${tempY}年${tempM}月${tempD}日`;
+                if (!allDates.some(dObj => dObj.fullDate === fDate)) {
+                    allDates.push({ y: tempY, m: tempM, d: tempD, fullDate: fDate, prefix: prefix, raw: mMatch[0] });
+                }
+            }
+
+            // 【单独资料修复】日期分隔符重复/多打（如 "1963..9.29"）：只在上面两个规则一个日期都没识别到时，才启用这个宽松兜底
+            if (!allDates.length) {
+                for (const mMatch of text.matchAll(_rc(_LOOSE_DATE_SRC, 'g'))) {
+                    const tempY = mMatch[2];
+                    const tempM = mMatch[3].replace(/^0/, '');
+                    const tempD = mMatch[4].replace(/^0/, '');
+                    if (!(_pyInt(tempM) >= 1 && _pyInt(tempM) <= 12 && _pyInt(tempD) >= 1 && _pyInt(tempD) <= 31)) continue;
+                    const fDate = `${tempY}年${tempM}月${tempD}日`;
+                    if (!allDates.some(dObj => dObj.fullDate === fDate)) {
+                        allDates.push({ y: tempY, m: tempM, d: tempD, fullDate: fDate, prefix: mMatch[1], raw: mMatch[0] });
+                    }
+                }
+            }
+
+            // 【两位数年份】"83年""61年"：年份原样输出，再到后面找月、日
+            const shortYearMatches = Array.from(text.matchAll(_rc(_SHORT_YEAR_SRC, 'g')));
+            const shortMdRegex = _rc(_SHORT_MD_SRC);
+            for (const ym of shortYearMatches) {
+                const _rest = text.slice(ym.index + ym[0].length);
+                const _nl = _rest.indexOf('\n');
+                const _sameLine = _nl !== -1 ? _rest.slice(0, _nl) : _rest;
+                let mdm = shortMdRegex.exec(_sameLine);
+                let _gap;
+                if (mdm) {
+                    _gap = _sameLine.slice(0, mdm.index);
+                } else {
+                    // 【年和月日分行写】同一行没找到月日时，到后面的行继续找
+                    mdm = shortMdRegex.exec(_rest);
+                    _gap = mdm ? _rest.slice(0, mdm.index) : "";
+                }
+                if (!mdm || /[0-9０-９]/.test(_gap)) continue;
+                const tempY = ym[2];
+                const mRaw = mdm[2];
+                let tempM = mRaw.replace(/^0/, '');
+                if (/^\d+月$/.test(mRaw.replace(/[０-９]/g, '0'))) tempM = mRaw.replace('月', '').replace(/^0/, '');
+                const dayRaw = mdm[3];
+                const tempD = dayRaw.startsWith('初') ? dayRaw : dayRaw.replace(/^0/, '');
+                const fDate = `${tempY}年${tempM}${tempM.includes('月') ? '' : '月'}${tempD}${tempD.includes('日') ? '' : '日'}`;
+                if (!allDates.some(dObj => dObj.fullDate === fDate)) {
+                    allDates.push({ y: tempY, m: tempM, d: tempD, fullDate: fDate, prefix: ym[1] || mdm[1], raw: ym[0], raw2: mdm[0] });
+                }
+            }
+            if (!allDates.length && shortYearMatches.length) {
+                const ym = shortYearMatches[0];
+                allDates.push({ y: ym[2], m: '', d: '', fullDate: `${ym[2]}年`, prefix: ym[1], raw: ym[0] });
+            }
+
+            const _getPos = dObj => { const pos = text.indexOf(dObj.raw); return pos !== -1 ? pos : 999; };
+            allDates.sort((a, b) => _getPos(a) - _getPos(b));
+
+            // 【历法写在日期后面】第二个日期后面紧跟 "农历/阴历/阳历…"，这个标签属于它前面的日期
+            if (allDates.length > 1) {
+                const _sufRe = _rc(_DATE_SUFFIX_CAL_SRC);
+                for (const dObj of allDates) {
+                    if (dObj.prefix) continue;
+                    const _p = text.indexOf(dObj.raw);
+                    if (_p === -1) continue;
+                    const _sm = text.slice(_p + dObj.raw.length).match(_sufRe);
+                    if (_sm) dObj.prefix = _sm[1];
+                }
+            }
+
+            if (allDates.length) {
+                y = allDates[0].y; m = allDates[0].m; d = allDates[0].d; fullDate = allDates[0].fullDate;
+            }
+            if (allDates.length > 1) secondDate = allDates[1].fullDate;
+
+            // 【保留额外农历】/【农历归属】
+            const solarLabels = ['阳历', '陽曆', '新历', '新曆', '国历', '國曆'];
+            const lunarLabels = ['农历', '農曆', '阴历', '陰曆', '旧历', '舊曆'];
+            let keepLunar = "";
+            let lunarFrag = null;
+            if (allDates.length && !allDates.some(dObj => lunarLabels.includes(dObj.prefix))) {
+                const _fm = text.match(_rc(_LUNAR_FRAG_SRC));
+                if (_fm) {
+                    const _rest = _fm[2].replace(/[ \t]+/g, '');
+                    lunarFrag = { raw: _fm[0], label: _fm[1], rest: _rest, text: _fm[1] + _rest };
+                }
+            }
+            let solarFrag = null;
+            if (lunarFrag === null && allDates.length && allDates.some(dObj => lunarLabels.includes(dObj.prefix))) {
+                const _sm = text.match(_rc(_SOLAR_FRAG_SRC));
+                if (_sm && !allDates.some(dObj => dObj.raw.includes(_sm[0]))) solarFrag = _sm[0];
+            }
+            if (lunarFrag === null && allDates.length && solarLabels.includes(allDates[0].prefix) && !allDates.some(dObj => lunarLabels.includes(dObj.prefix))) {
+                keepLunar = lunarLabels.find(lb => text.includes(lb)) || "";
+            }
+
+            let ageNum = "";
+            let isNominalAge = false;
+            let isFullAge = false;
+            let ageRawMatch = "";
+
+            const ageMatch = text.match(_rc(_AGE_SRC));
+            if (ageMatch) {
+                ageNum = ageMatch[3] || ageMatch[5];
+                const ageLabelText = ageMatch[2] || ageMatch[6];
+                ageRawMatch = ageMatch[0].trim();
+                if (ageLabelText && (ageLabelText.includes("虚") || ageLabelText.includes("虛"))) {
+                    isNominalAge = true;
+                } else if (/周岁|周歲/.test(ageRawMatch)) {
+                    isFullAge = true;   // 客户写了"63周岁"：输出时保留"周岁"两个字
+                }
+            }
+
+            if (!ageNum) {
+                let textForAgeSearch = text;
+                for (const dObj of allDates) {
+                    textForAgeSearch = _replAll(textForAgeSearch, dObj.raw, " ");
+                    if (dObj.raw2) textForAgeSearch = _replAll(textForAgeSearch, dObj.raw2, " ");
+                }
+                const allKeysSorted = _byLenDesc(Object.values(KEYWORDS).flat());
+                for (const k of allKeysSorted) {
+                    if (!textForAgeSearch.includes(k)) continue;   // 提速，结果不变
+                    textForAgeSearch = textForAgeSearch.replace(_kwRegexAge(escapeRegExp(k)), " ");
+                }
+                textForAgeSearch = textForAgeSearch.replace(_rc(String.raw`清水寺\s*\d*`, 'g'), ' ');
+                textForAgeSearch = textForAgeSearch.replace(_rc(_FANG_GUIREN_SRC, 'g'), ' ');
+                textForAgeSearch = textForAgeSearch.replace(_rc(String.raw`[四4八8]方贵人\s*\d*`, 'g'), ' ');
+
+                if (name) textForAgeSearch = _replAll(textForAgeSearch, name, " ");
+                if (zodiac) textForAgeSearch = _replAll(textForAgeSearch, zodiac, " ");
+                if (gender) textForAgeSearch = _replAll(textForAgeSearch, gender, " ");
+                textForAgeSearch = textForAgeSearch.replace(/[属屬虚虛]/g, ' ');
+
+                // 单独一行的编号（"2" 换行 "、姓名…"）不是年龄，不取
+                let standaloneMatch = textForAgeSearch.match(_rc(String.raw`(?:^|[,.，、;；\s\(\)（）])(\d{1,3})(?=$|[,.，、;；\s\(\)（）])`));
+                if (standaloneMatch && _rc(String.raw`(?:^|\n)[ \t]*` + escapeRegExp(standaloneMatch[1]) + String.raw`[ \t]*\r?\n[ \t]*、`).test(text)) {
+                    standaloneMatch = null;   // 编号，不是年龄
+                }
+                if (standaloneMatch) {
+                    const potentialAge = _pyInt(standaloneMatch[1]);
+                    if (potentialAge > 0 && potentialAge <= 120) ageNum = standaloneMatch[1];
+                }
+            }
+
+            let timeStr = "";
+            let rawTimeMatchStr = "";
+            let textForTime = name ? _replAll(text, name, "####") : text;
+            textForTime = _replAll(textForTime, "生辰", " ");   // 防止“生辰”中的“辰”被提取为时辰
+            textForTime = textForTime.replace(_rc(String.raw`(?:出生)?(?:时辰|時辰|时间|時間)[:：\s]*`, 'g'), " ");
+            textForTime = textForTime.replace(_rc(_PRODUCT_COLON_SRC, 'g'), " ");   // 项目后的冒号（如 "学业符1："）一律忽略，不当作时间
+
+            // 冒号只有写成 "4:30" 这种 "小时:分钟" 才算时间；客户写了 "4点左右" 时，"左右" 一起保留
+            const match = textForTime.match(_rc(_CLOCK_SRC, 'i'));
+            if (match) {
+                rawTimeMatchStr = match[0].trim();
+                const modifier = match[1] || "";
+                let hour = _pyInt(match[2]);
+                const minute = match[3];
+                const minute_str = (minute && _pyInt(minute) > 0) ? `${_pyInt(minute)}分` : "";
+
+                if (["下午", "晚", "傍晚"].some(w => modifier.includes(w)) && hour < 12) {
+                    hour += 12;
+                } else if (modifier.includes("夜里") && (hour >= 6 && hour < 12)) {
+                    hour += 12;
+                } else if (["凌晨", "深夜", "半夜"].some(w => modifier.includes(w)) && hour === 12) {
+                    hour = 0;
+                } else if (modifier.includes("中午") && hour === 12) {
+                    hour = 12;
+                }
+                timeStr = `${hour}点` + minute_str + (match[4] || match[5] || "");
+            } else {
+                const match_cn = textForTime.match(_rc(_CN_CLOCK_SRC, 'i'));
+                if (match_cn) {
+                    rawTimeMatchStr = match_cn[0].trim();
+                    const modifier = match_cn[1] || "";
+                    const cn_map = { "一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10, "十一": 11, "十二": 12 };
+                    const h_str = match_cn[2];
+                    let hour = cn_map[h_str] !== undefined ? cn_map[h_str] : -1;
+                    if (hour !== -1) {
+                        if (["下午", "晚", "傍晚"].some(w => modifier.includes(w)) && hour < 12) {
+                            hour += 12;
+                        } else if (modifier.includes("夜里") && (hour >= 6 && hour < 12)) {
+                            hour += 12;
+                        } else if (["凌晨", "深夜", "半夜"].some(w => modifier.includes(w)) && hour === 12) {
+                            hour = 0;
+                        }
+                        timeStr = `${hour}点` + (match_cn[4] || match_cn[5] || "");
+                    }
+                } else {
+                    const zodiacHourMatch = textForTime.match(/(?<![上下孩])([子丑寅卯辰巳午未申酉戌亥吉]|已(?=[时時])|末(?=[时時]))(时|時)?/);
+                    if (zodiacHourMatch) {
+                        rawTimeMatchStr = zodiacHourMatch[0].trim();
+                        timeStr = ({ "已": "巳", "末": "未" }[zodiacHourMatch[1]] || zodiacHourMatch[1]) + (zodiacHourMatch[2] ? "时" : "");   // 已时=巳时，末时=未时
+                    }
+                }
+            }
+
+            const _calText = lunarFrag ? _replAll(text, lunarFrag.raw, ' ') : text;
+            let calendarType = "";
+            if (_calText.includes("农历") || _calText.includes("農曆")) calendarType = "农历";
+            else if (_calText.includes("阴历") || _calText.includes("陰曆")) calendarType = "阴历";
+            else if (_calText.includes("旧历") || _calText.includes("舊曆")) calendarType = "旧历";
+            else if (_calText.includes("新历") || _calText.includes("新曆")) calendarType = "新历";
+            else if (_calText.includes("国历") || _calText.includes("國曆")) calendarType = "国历";
+            else if (_calText.includes("阳历") || _calText.includes("陽曆")) calendarType = "阳历";
+
+            let weekday = "";
+            let rawWeekdayMatchStr = "";
+            const textForWeekdaySearch = name ? _replAll(text, name, "____") : text;
+            const weekMatch = textForWeekdaySearch.match(/(?:星期|周|週)([一二三四五六日天1234567])/);
+            if (weekMatch) {
+                rawWeekdayMatchStr = weekMatch[0];
+                const val = weekMatch[1];
+                const w_map = { '1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六', '7': '日', '天': '日' };
+                weekday = w_map[val] || val;
+            }
+
+            let textAfterA = "";
+            // 只把“单独出现的 a/A”当作标记；英文单词/拼音里的 a（如 Bai、Zhang）不算
+            const aIndex = text.match(/(?<![A-Za-z])[aA](?![A-Za-z])/);
+            if (aIndex) textAfterA = text.slice(aIndex.index + 1).trim();
+
+            const DUO_PH = "";
+            const _wishStore = new Map();
+            let extraText = maskWishPhrases(text, _wishStore);   // 愿望短语整句受保护，不被项目关键词/标签清理拆坏
+            if (rawTimeMatchStr.endsWith('多') && extraText.includes(rawTimeMatchStr)) {
+                extraText = _replOnce(extraText, rawTimeMatchStr, DUO_PH);
+            }
+            if (lunarFrag) extraText = _replOnce(extraText, lunarFrag.raw, FRAG_PH);
+            if (solarFrag) extraText = _replOnce(extraText, solarFrag, SOLAR_PH);
+
+            let _xueyeRemoved = false;
+            extraText = extraText.replace(_rc(_FANG_GUIREN_SRC, 'g'), " ");   // 接X方贵人 / 贵人X方：整段属于项目，不进红字
+            for (const k of ALL_PRODUCT_KEYWORDS) {
+                if (!extraText.includes(k)) continue;   // 提速，结果不变
+                const kwRegex = _kwRegexExtra(escapeRegExp(k));
+                if (keepType && KEEP_KEYS_SET[keepType].has(k)) {
+                    // 【学业项目·第二个学业/事业不去掉】学业类关键词只去掉第一个，后面再出现的留在红字里
+                    if (_xueyeRemoved) continue;
+                    let _n = 0;
+                    extraText = extraText.replace(_rc(kwRegex.source, ''), () => { _n++; return " "; });
+                    if (_n) _xueyeRemoved = true;
+                    continue;
+                }
+                extraText = extraText.replace(kwRegex, " ");
+            }
+
+            const LUNAR_PH = "";
+            if (keepLunar) extraText = _replAll(extraText, keepLunar, LUNAR_PH);
+
+            let termsToRemove = [name, fullDate, secondDate, timeStr, rawTimeMatchStr, calendarType, rawWeekdayMatchStr, weekday, textAfterA];
+            if (zodiac) {
+                if ("鼠虎".includes(zodiac)) termsToRemove.push("老" + zodiac);   // 老鼠=鼠，老虎=虎：这个"老"字不进红字
+                termsToRemove.push(zodiac + "年", zodiac, "属" + zodiac, "屬" + zodiac, "属" + zodiac + "的", "屬" + zodiac + "的", zodiac + "的");
+            }
+
+            if (y) termsToRemove.push(y + "年", y);
+            if (m) {
+                const m_str = String(m);
+                termsToRemove.push(m_str + "月", m_str);
+                if (m_str.length === 1 && _isDigitStr(m_str)) termsToRemove.push("0" + m_str + "月", "0" + m_str);
+            }
+            if (d) {
+                const d_str = String(d);
+                termsToRemove.push(d_str + "日", d_str + "号", d_str);
+                if (d_str.length === 1 && _isDigitStr(d_str)) termsToRemove.push("0" + d_str + "日", "0" + d_str + "号");
+            }
+
+            if (ageNum) {
+                termsToRemove.push(ageNum + "岁", "虚岁" + ageNum, "虚" + ageNum, ageNum);
+                if (ageRawMatch) termsToRemove.push(ageRawMatch);
+            }
+
+            for (const dObj of allDates) {
+                termsToRemove.push(dObj.raw);
+                if (dObj.raw !== dObj.raw.trim()) {
+                    // 日期原文开头带着换行/空格时，去掉首尾空白再清一次，避免"06.09"里的 09 残留成红字
+                    termsToRemove.push(dObj.raw.trim());
+                }
+                if (dObj.raw2) termsToRemove.push(dObj.raw2);
+                if (dObj.prefix) termsToRemove.push(dObj.prefix);
+            }
+
+            termsToRemove.push(...LABELS_PERSON);
+            termsToRemove.push(...EXTRA_LABELS_TRAD);
+
+            termsToRemove = _byLenDesc(termsToRemove.filter(t => t).map(t => maskWishPhrases(String(t), _wishStore)));
+            for (const term of termsToRemove) {
+                if (_isDigitStr(String(term))) {
+                    // 纯数字的词（年/月/日/年龄）只去掉"独立的数字"，不能从更长的数字中间抠掉一位
+                    extraText = extraText.replace(_rc(String.raw`(?<!\d)` + escapeRegExp(String(term)) + String.raw`(?!\d)`, 'g'), ' ');
+                } else {
+                    extraText = _replAll(extraText, String(term), ' ');
+                }
+            }
+
+            if (gender) extraText = _replOnce(extraText, gender, ' ');
+
+            extraText = extraText.replace(/[一二两三四五六七八九十双雙百千万0-9]+(?:份|桶|位)/g, ' ');
+            extraText = extraText.replace(IGNORED_SYMBOLS_RE, ' ');
+            extraText = stripIgnoredSymbols(extraText);
+
+            extraText = extraText.replace(/[ \n\r\t\xA0,.\(\)（），：:;；。+＋!！、​]+/g, ' ').trim();
+            extraText = extraText.replace(/^[.\s:：,、，。！？+＋!！❗➕➖✖➗✔️✅❌]+/, '');
+            if (keepLunar) extraText = _replAll(extraText, LUNAR_PH, keepLunar);
+            extraText = restoreWishPhrases(extraText, _wishStore);   // 还原愿望短语
+            if (solarFrag) extraText = _replAll(extraText, SOLAR_PH, solarFrag.replace(/[ \t]+/g, ''));
+
+            // "多"占位符还原：常规项目不输出到红字；化太岁等保持旧行为(多留在红字)
+            let extraTextDuo = extraText;
+            if (extraText.includes(DUO_PH)) {
+                extraTextDuo = _replAll(extraText, DUO_PH, ' 多').replace(/\s+/g, ' ').trim();
+                extraText = _replAll(extraText, DUO_PH, ' ').replace(/\s+/g, ' ').trim();
+            }
+
+            // 农历片段：extraText 里还原成 "农历冬月初十"；extraTextNoFrag 是去掉农历片段后的其余红字
+            let extraTextNoFrag = extraText;
+            if (lunarFrag) {
+                extraTextNoFrag = _replAll(extraText, FRAG_PH, ' ').replace(/\s+/g, ' ').trim();
+                extraText = _replAll(extraText, FRAG_PH, lunarFrag.text);
+                extraTextDuo = _replAll(extraTextDuo, FRAG_PH, lunarFrag.text);
+            }
+
+            const result = {
+                name: name, gender: gender, zodiac: zodiac, y: y, m: m, d: d,
+                fullDate: fullDate, secondDate: secondDate, textAfterA: textAfterA,
+                timeStr: timeStr, rawTimeMatchStr: rawTimeMatchStr, age: ageNum, isNominalAge: isNominalAge, isFullAge: isFullAge,
+                ageRawMatch: ageRawMatch,
+                calendarType: calendarType, weekday: weekday, rawWeekdayMatchStr: rawWeekdayMatchStr,
+                originalText: text, rawOriginalText: rawOriginalText, extraText: extraText,
+                allDates: allDates, keepLunar: keepLunar,
+                lunarFrag: lunarFrag, extraTextNoFrag: extraTextNoFrag, extraTextDuo: extraTextDuo
+            };
+            // 学业/事业类词出现两次以上时，另算一份"第二个不去掉"的红字，只给学业/健康项目用
+            const _rawNoWish = maskWishPhrases(rawOriginalText);   // 愿望短语里的学业/健康不算“第二个同类词”
+            for (const _kt of Object.keys(KEEP_SECOND_TYPES)) {
+                const _words = KEEP_SECOND_TYPES[_kt];
+                if (!keepType && _words.reduce((acc, k) => acc + _countOf(_rawNoWish, k), 0) >= 2) {
+                    const _sub = extractPersonInfo(rawOriginalText, _kt);
+                    if (!result.keep2nd) result.keep2nd = {};
+                    result.keep2nd[_kt] = { extraText: _sub.extraText, extraTextNoFrag: _sub.extraTextNoFrag };
+                }
+            }
+            return result;
+        }
+
+        function convertToZodiacHour(timeStr, rawText) {
+            if (!timeStr) return "吉";
+            const zMatch = timeStr.match(/[子丑寅卯辰巳午未申酉戌亥吉]/);
+            if (zMatch) return zMatch[0];
+
+            let hour = -1;
+            const cnMatch = timeStr.match(/([一二三四五六七八九十]{1,2})点/);
+            if (cnMatch) {
+                const cnMap = { "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10, "十一": 11, "十二": 12 };
+                hour = cnMap[cnMatch[1]] !== undefined ? cnMap[cnMatch[1]] : -1;
+            } else {
+                const numMatch = timeStr.match(_rc(String.raw`(\d{1,2})`));
+                if (numMatch) hour = _pyInt(numMatch[1]);
+            }
+
+            if (hour === -1) return "吉";
+            const lowerText = rawText.toLowerCase();
+            if (["下午", "pm", "晚上", "夜里"].some(x => lowerText.includes(x)) && hour < 12) hour += 12;
+            if (["上午", "am", "凌晨", "早上", "早晨"].some(x => lowerText.includes(x)) && hour === 12) hour = 0;
+
+            const zArr = ["子", "丑", "丑", "寅", "寅", "卯", "卯", "辰", "辰", "巳", "巳", "午", "午", "未", "未", "申", "申", "酉", "酉", "戌", "戌", "亥", "亥", "子"];
+            return (hour >= 0 && hour < 24) ? zArr[hour] : "吉";
+        }
+
+        function buildRow(prod, info, typeCount) {
+            if (prod.type === '龙莲太岁') {   // 填表逻辑完全同化太岁，只是名称列写“龙莲太岁”
+                const row = _buildRowCore({ type: '化太岁', qty: '' }, info, typeCount);
+                row[0] = '龙莲太岁';
+                return row;
+            }
+            return _buildRowCore(prod, info, typeCount);
+        }
+
+        function _stripProjectWords(text) {
+            // 【香油专用】输出原文时，去掉项目名称（香油自己的 + 其他项目的，连同紧跟的数量），其余原文照搬
+            let t = text;
+            t = t.replace(_rc(_FANG_GUIREN_SRC, 'g'), " ");
+            for (const k of ALL_PRODUCT_KEYWORDS) {
+                if (!t.includes(k)) continue;
+                const rx = _rc(String.raw`${PREFIX_QTY_NO_CAPTURE}(?:双|雙)?[！!❗]*${escapeRegExp(k)}[！!❗]*[ \t]*(?:各)?[ \t]*(?:${_MULT_SIGNS}?[ \t]*(?!\d{3})[0-9一二两三四五六七八九十双雙]{1,2}(?![0-9年月日号岁歲.．\-/]))?[ \t]*(?:份|桶|位)?[！!❗]*`, 'g');
+                t = t.replace(rx, " ");
+            }
+            const lines = [];
+            for (let ln of t.split(/\r\n|[\n\r\v\f\x1c-\x1e\x85\u2028\u2029]/)) {
+                ln = ln.replace(/^[\s:：,，、。.+＋➕!！❗-]+/, '').trim();
+                if (ln) lines.push(ln);
+            }
+            return lines.join("\n");
+        }
+
+        const _RED_OPEN = "<span style='color:#ff4444;'>";
+        const _RED_CLOSE = "</span>";
+        const _XIAOREN_STRIP_RE = /[ \n\r\t\xA0,.\(\)（），：:;；、，。！？!?"'‘’“”<>《》【】\[\]\-]+/g;
+
+        function _buildRowCore(prod, info, typeCount) {
+            if (typeCount === undefined) typeCount = 1;
+            const row = new Array(14).fill("");
+            row[0] = prod.type + prod.qty;
+
+            const allowedCalendars = ['农历', '阴历', '旧历', '新历', '国历'];
+            const globalCalendar = allowedCalendars.includes(info.calendarType) ? info.calendarType : "";
+
+            const allDates = info.allDates || [];
+            const d1_prefix = (allDates.length && allDates[0].prefix) ? allDates[0].prefix : "";
+            const d2_prefix = (allDates.length > 1 && allDates[1].prefix) ? allDates[1].prefix : "";
+
+            let p1 = d1_prefix;
+            if (!p1 && !d2_prefix && globalCalendar) p1 = globalCalendar;
+            const p2 = d2_prefix;
+
+            let currentFullDate = info.fullDate;
+            if (!['化太岁', '清水寺', '放鱼', '香油'].includes(prod.type)) {
+                if (info.d && String(info.d).startsWith('初')) {
+                    const mText = String(info.m) + (String(info.m).includes("月") ? "" : "月");
+                    currentFullDate = `${info.y}年${mText}${info.d}`;
+                }
+            }
+
+            let displayTime = prod.type === '化太岁' ? convertToZodiacHour(info.timeStr, info.originalText) : info.timeStr;
+            if (prod.type !== '化太岁' && displayTime && /[子丑寅卯辰巳午未申酉戌亥吉]$/.test(displayTime)) {
+                displayTime += "时";
+            }
+
+            // 【农历/阴历去"日"规则】除化太岁、放鱼外，日期是农历/阴历时，输出末尾不加"日"字；阳历/国历等保持原规则
+            const lunarCalendars = ['农历', '農曆', '阴历', '陰曆', '旧历', '舊曆'];
+            let secondDateText = info.secondDate;
+            let lunarDay1Stripped = false;
+            if (!['化太岁', '放鱼', '香油'].includes(prod.type)) {
+                if (lunarCalendars.includes(p1) && currentFullDate.endsWith('日')) {
+                    currentFullDate = currentFullDate.slice(0, -1);
+                    lunarDay1Stripped = true;
+                }
+                if (lunarCalendars.includes(p2) && secondDateText.endsWith('日')) {
+                    secondDateText = secondDateText.slice(0, -1);
+                }
+            }
+
+            let date1_str = p1 + currentFullDate;
+            let date2_str = info.secondDate ? (p2 + secondDateText) : "";
+
+            const doubleDateTargets = ['接贵人', '爱情', '补财库', '健康', '学业'];
+            const solarCalendars = ['阳历', '陽曆', '新历', '新曆', '国历', '國曆'];
+            const _toDun = s => _replAll(_replAll(_replAll(_replAll(s, '年', '、'), '月', '、'), '日', ''), '号', '').replace(/、+$/, '');
+            // 【双出生日期连写】补财库/贵人/学业/健康/爱情：农历片段视为第二个出生日期，紧跟第一个日期，只用空格相连
+            let fragHtml = "";
+            const _frag = info.lunarFrag;
+            if (_frag && doubleDateTargets.includes(prod.type)) {
+                const _fragRest = _frag.rest.replace(/[日号號]$/, '');
+                fragHtml = _frag.label + (_fragRest ? `<span style='color:#ff4444;'>${_fragRest}</span>` : "");
+            }
+            if (doubleDateTargets.includes(prod.type) && info.secondDate) {
+                const mod_d1 = _toDun(currentFullDate);
+                if (!lunarCalendars.includes(p1)) {   // 农历/阴历日期保持"年月"写法、不用顿号分隔、末尾不加日
+                    date1_str = (solarCalendars.includes(p1) ? "" : p1) + mod_d1;   // 有两个日期时，"阳历"两字去掉
+                }
+                const mod_d2 = _toDun(info.secondDate);
+                if (!lunarCalendars.includes(p2)) {
+                    date2_str = (solarCalendars.includes(p2) ? "" : p2) + mod_d2;
+                }
+            } else if (doubleDateTargets.includes(prod.type) && fragHtml && solarCalendars.includes(p1)) {
+                // 阳历 + 农历片段(阴历四月初五)：同样去掉"阳历"，年月日用顿号
+                date1_str = _toDun(currentFullDate);
+            }
+
+            const weekSuffix = info.weekday ? ` 周${info.weekday}` : "";
+
+            let dateWithCalendar = date1_str;
+
+            const typesNeedWeekSuffix = ['爱情', '学业', '接贵人', '健康', '补财库'];
+            const req1_targets = ['补财库', '消灾', '接贵人', '学业', '健康', '爱情', '踩小人'];
+
+            if (doubleDateTargets.includes(prod.type) && info.secondDate) {
+                dateWithCalendar = date1_str + " " + date2_str;
+            }
+            if (fragHtml) {
+                dateWithCalendar = dateWithCalendar + " " + fragHtml;
+            }
+
+            let timeGlue = "";
+            if (displayTime) {
+                if (doubleDateTargets.includes(prod.type)) {
+                    timeGlue = " ";
+                } else if (lunarDay1Stripped && /^[0-9０-９]/.test(displayTime[0])) {
+                    timeGlue = " ";
+                }
+            }
+
+            if (req1_targets.includes(prod.type) && displayTime) {
+                dateWithCalendar += ((dateWithCalendar && !dateWithCalendar.endsWith(' ')) ? timeGlue : "") + displayTime;
+            }
+
+            if (typesNeedWeekSuffix.includes(prod.type)) dateWithCalendar += weekSuffix;
+
+            let ageLabel = "";
+            if (info.age) {
+                if (['化太岁', '清水寺'].includes(prod.type)) {
+                    ageLabel = info.isNominalAge ? `虚${info.age}` : String(info.age);
+                } else {
+                    ageLabel = info.isNominalAge ? `虚${info.age}岁` : (info.isFullAge ? `${info.age}周岁` : `${info.age}岁`);
+                }
+            }
+
+            const currentMonth = String(info.m);
+
+            let rawExtraText = fragHtml ? (info.extraTextNoFrag !== undefined ? info.extraTextNoFrag : info.extraText) : info.extraText;
+            if (info.keep2nd && info.keep2nd[prod.type]) {   // 学业/健康：第二个同类词保留在红字里
+                const _k2 = info.keep2nd[prod.type];
+                rawExtraText = fragHtml ? _k2.extraTextNoFrag : _k2.extraText;
+            }
+            if (['化太岁', '清水寺', '放鱼', '香油'].includes(prod.type)) {
+                rawExtraText = info.extraTextDuo !== undefined ? info.extraTextDuo : info.extraText;   // 这几个项目不处理"多"，保持原行为
+            }
+            if (rawExtraText && ['健康', '学业', '接贵人', '爱情', '补财库', '消灾'].includes(prod.type)) {
+                rawExtraText = rawExtraText.replace(/(?:周|週|星期)[0-9一二三四五六日天留]+/g, '').trim();
+            }
+            let extraHtml = rawExtraText ? `<span style='color:#ff4444;'>${rawExtraText}</span>` : "";
+            if (rawExtraText && info.keepLunar && ['健康', '学业', '接贵人', '爱情', '补财库'].includes(prod.type) && rawExtraText.startsWith(info.keepLunar)) {
+                const _lunarRest = rawExtraText.slice(info.keepLunar.length);
+                extraHtml = info.keepLunar + (_lunarRest ? `<span style='color:#ff4444;'>${_lunarRest}</span>` : "");
+            }
+
+            const randomizeTargets = ['健康', '学业', '接贵人', '爱情', '补财库'];
+
+            if (prod.type === '香油') {
+                row[4] = _stripProjectWords(info.rawOriginalText !== undefined ? info.rawOriginalText : info.originalText);
+            } else if (FANGYU_LIKE.includes(prod.type)) {
+                row[4] = (info.rawOriginalText !== undefined ? info.rawOriginalText : info.originalText).trim();
+
+            } else if (prod.type === '踩小人') {
+                const zodiac_str = info.zodiac ? `属${info.zodiac}` : "";
+                row[4] = `${info.name} ${info.gender} ${zodiac_str}`.trim();
+                row[4] = row[4].replace(/\s+/g, ' ');
+
+                const agePrefix = ageLabel ? `${ageLabel} ` : "";
+
+                const m_str = String(info.m);
+                const d_str = String(info.d);
+                const is_lunar_style = ['腊月', '冬月', '正月', '闰'].some(x => m_str.includes(x)) || d_str.startsWith('初');
+
+                let formattedDate;
+                if (is_lunar_style) {
+                    const m_display = m_str.includes('月') ? m_str : `${m_str}月`;
+                    const d_clean = d_str.replace(/[日号]$/, '');
+                    formattedDate = `${info.y}年${m_display}${d_clean}`;
+                } else {
+                    formattedDate = _replAll(_replAll(_replAll(currentFullDate, '年', '、'), '月', '、'), '日', '').replace(/、+$/, '');   // 踩小人这里不去掉“号”
+                }
+
+                if (displayTime) {
+                    row[5] = `${agePrefix}${p1}${formattedDate} ${displayTime}`.trim();
+                } else {
+                    row[5] = `${agePrefix}${p1}${formattedDate}`.trim();
+                }
+
+                let raw_text = info.originalText;
+                const _frag2 = info.lunarFrag;
+                if (_frag2) raw_text = _replOnce(raw_text, _frag2.raw, FRAG_PH);
+                const _wishStore2 = new Map();
+                raw_text = maskWishPhrases(raw_text, _wishStore2);   // 愿望短语整句受保护
+
+                for (const k of ALL_PRODUCT_KEYWORDS) {
+                    if (!raw_text.includes(k)) continue;   // 提速，结果不变
+                    raw_text = raw_text.replace(_kwRegexXiaoren(escapeRegExp(k)), " ");
+                }
+
+                if (info.name) raw_text = _replOnce(raw_text, info.name, ' ');
+
+                if (info.allDates && info.allDates.length) {
+                    const first_date = info.allDates[0];
+                    raw_text = _replOnce(raw_text, first_date.raw, ' ');
+                    if (first_date.raw2) raw_text = _replOnce(raw_text, first_date.raw2, ' ');
+                    if (first_date.prefix) raw_text = _replOnce(raw_text, first_date.prefix, ' ');
+                }
+
+                if (info.calendarType && (!info.allDates || !info.allDates.length || info.calendarType !== info.allDates[0].prefix)) {
+                    raw_text = _replOnce(raw_text, info.calendarType, ' ');
+                }
+
+                raw_text = raw_text.replace(_rc(String.raw`男女(?=[:：\s]*[男女])`, 'g'), ' ');   // "男女:女" 里的"男女"是性别标签，先去掉
+                raw_text = raw_text.replace(/([男女])(?:孩子|孩|生|性|士)/g, '$1');   // 女生/男孩/女性/男士……=女/男
+                if (info.gender) raw_text = _replOnce(raw_text, info.gender, ' ');
+
+                if (info.zodiac) {
+                    raw_text = _replOnce(raw_text, info.zodiac + '年', ' ');
+                    raw_text = _replOnce(raw_text, info.zodiac, ' ');
+                }
+
+                if (info.age) {
+                    if (info.ageRawMatch) raw_text = _replOnce(raw_text, info.ageRawMatch, ' ');
+                    raw_text = raw_text.replace(_rc(String.raw`(?:虚岁|虛歲|虚|虛|岁数|周岁|周歲|岁|歲)?\s*` + escapeRegExp(String(info.age)) + String.raw`\s*(?:虚岁|虛歲|虚|虛|岁数|周岁|周歲|岁|歲)?`), ' ');
+                }
+
+                if (info.rawTimeMatchStr) {
+                    raw_text = _replOnce(raw_text, info.rawTimeMatchStr, ' ');
+                } else if (info.timeStr) {
+                    raw_text = _replOnce(raw_text, info.timeStr, ' ');
+                }
+
+                if (info.rawWeekdayMatchStr) raw_text = _replOnce(raw_text, info.rawWeekdayMatchStr, ' ');
+
+                const labels2 = _byLenDesc(LABELS_XIAOREN.concat(EXTRA_LABELS_TRAD));
+                for (const term of labels2) raw_text = _replAll(raw_text, term, ' ');
+
+                raw_text = raw_text.replace(/[+＋!！❗➕➖✖➗✔️✅❌]/g, ' ');
+                raw_text = raw_text.replace(IGNORED_SYMBOLS_RE, ' ');
+                raw_text = stripIgnoredSymbols(raw_text);
+                raw_text = raw_text.replace(_XIAOREN_STRIP_RE, ' ').trim();
+                raw_text = raw_text.replace(/^[.\s:：,、，。！？+＋!！❗➕➖✖➗✔️✅❌]+/, '');
+                raw_text = restoreWishPhrases(raw_text, _wishStore2);
+                if (_frag2) raw_text = _replAll(raw_text, FRAG_PH, _frag2.text).trim();
+
+                if (raw_text) row[12] = `<span style='color:#ff4444;'>${raw_text}</span>`;
+
+            } else if (prod.type === '清水寺') {
+                row[4] = `${info.name} ${info.gender}`.trim();
+                row[5] = ""; row[6] = info.zodiac; row[7] = ageLabel;
+
+                let qingshui_p1 = p1;
+                for (const k of ['阳历', '陽曆', '国历', '國曆']) qingshui_p1 = _replAll(qingshui_p1, k, '');
+
+                row[8] = qingshui_p1 + String(info.y);
+                row[9] = currentMonth.replace('月', '');
+                row[10] = info.d;
+                row[12] = info.weekday;
+
+            } else if (prod.type === '化太岁') {
+                if (info.weekday) {
+                    if (!p1) row[3] = "周" + info.weekday;
+                    else row[12] = "周" + info.weekday;
+                } else {
+                    row[3] = p1;
+                }
+
+                const r12_parts = [];
+                // 化太岁："其他"框里的内容（周几 / 第二个日期 / 多余字）一律红色输出
+                if (row[12]) r12_parts.push(`<span style='color:#ff4444;'>${row[12]}</span>`);
+                if (date2_str) r12_parts.push(`<span style='color:#ff4444;'>${date2_str}</span>`);
+                if (extraHtml) r12_parts.push(extraHtml);
+
+                row[12] = r12_parts.join(" ");
+
+                row[4] = info.name; row[5] = info.gender; row[6] = info.zodiac; row[7] = ageLabel;
+                row[8] = info.y; row[9] = currentMonth.replace('月', ''); row[10] = info.d;
+                row[11] = displayTime;
+
+            } else if (prod.type === '消灾') {
+                if (info.weekday) row[6] = "周" + info.weekday;
+
+                // 【消灾】年龄放在姓名列最后面（姓名 性别 属相 年龄），不再放到性别列
+                const _nameCell = `${info.name} ${info.gender} ${info.zodiac}`.trim() + (ageLabel ? " " + ageLabel : "");
+                if (info.age && info.timeStr) {
+                    row[4] = _nameCell;
+                    row[5] = dateWithCalendar;
+                } else if (info.age && !info.timeStr) {
+                    const dotDate = [String(info.y), String(info.m), String(info.d)].filter(Boolean).join("、");
+                    const finalDotDate = p1 + dotDate;
+                    row[4] = _nameCell;
+                    row[5] = `${finalDotDate}`.trim();
+                } else {
+                    row[4] = _nameCell;
+                    row[5] = [dateWithCalendar].filter(Boolean).join(" ");
+                }
+
+                if (info.secondDate) {
+                    row[6] = date2_str;
+                } else {
+                    if (extraHtml) {
+                        // 星期X仍放在属相列，红色多余字接在它后面，两者同时保留
+                        row[6] = (info.weekday ? "周" + info.weekday + " " : "") + extraHtml;
+                    }
+                }
+
+            } else if (randomizeTargets.includes(prod.type)) {
+                if (typeCount > 1) {
+                    const pieces = [];
+                    if (info.gender) pieces.push(info.gender);
+                    if (info.zodiac) pieces.push((Math.random() > 0.5 ? "属" : "") + info.zodiac);
+                    if (ageLabel) pieces.push(ageLabel);
+
+                    const dateTimeBlock = [dateWithCalendar].filter(Boolean).join(" ");
+                    if (dateTimeBlock) pieces.push(dateTimeBlock);
+
+                    for (let i = pieces.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        const t = pieces[i]; pieces[i] = pieces[j]; pieces[j] = t;
+                    }
+
+                    let finalStr = info.name;
+                    if (pieces.length) {
+                        const seps = [' ', '，', '、'];
+                        let joined = pieces[0];
+                        for (let i = 1; i < pieces.length; i++) {
+                            joined += seps[Math.floor(Math.random() * seps.length)] + pieces[i];
+                        }
+                        finalStr = `${finalStr} ${joined}`.trim();
+                    }
+                    if (extraHtml) finalStr = `${finalStr} ${extraHtml}`.trim();
+                    row[4] = finalStr;
+                } else {
+                    let effectiveDate = date1_str + (date2_str ? " " + date2_str : "");
+                    if (fragHtml) effectiveDate += " " + fragHtml;
+                    let dateTimeStr = effectiveDate;
+
+                    if (displayTime) {
+                        dateTimeStr += ((dateTimeStr && !dateTimeStr.endsWith(' ')) ? timeGlue : "") + displayTime;
+                    }
+                    if (info.weekday) dateTimeStr += ` 周${info.weekday}`;
+
+                    dateTimeStr = dateTimeStr.replace(/[\s.,[,，、;；]+$/, '').trim();
+
+                    if (prod.type === '接贵人') {
+                        const infoParts = [info.name, info.gender, info.zodiac, ageLabel].filter(Boolean);
+                        const personalStr = infoParts.join('、');
+                        row[4] = [personalStr, dateTimeStr].filter(Boolean).join(" ");
+                        if (extraHtml) row[4] += " " + extraHtml;
+                    } else if (prod.type === '补财库') {
+                        const sexZodiac = (info.gender && info.zodiac) ? `${info.gender}、${info.zodiac}` : (info.gender || info.zodiac);
+                        row[4] = [info.name, sexZodiac, ageLabel, dateTimeStr].filter(Boolean).join(" ");
+                        if (extraHtml) row[4] += " " + extraHtml;
+                    } else {
+                        row[4] = [info.name, info.gender, ageLabel, dateTimeStr, info.zodiac].filter(Boolean).join(" ");
+                        if (extraHtml) row[4] += " " + extraHtml;
+                    }
+                }
+            } else {
+                row[4] = [info.name, info.gender, ageLabel, dateWithCalendar, displayTime, info.zodiac].filter(Boolean).join(" ");
+            }
+            return row;
+        }
+
+        // ================= 字数长短提醒：超过项目规定的字数，该行"名称"变黄色 =================
+        // LENGTH_RULES（上方数据表）= [项目名, [[列号, 最多允许的"中文字数"], ...]]，字数"超过"（大于）这个数才变黄。
+        // 列号对应表格从左到右（从 0 开始）：0名称 1指定 2农历 3年历 4姓名 5性别 6属相 7年龄 8年 9月 10日 11时辰 12其他 13小人
+        // 字数换算：1 个中文字 = 1 个字；英文字母、数字、标点符号、空格、其他符号 = 半个字
+        function _isCjkChar(ch) {
+            const o = ch.codePointAt(0);
+            return (0x4E00 <= o && o <= 0x9FFF) || (0x3400 <= o && o <= 0x4DBF) || (0xF900 <= o && o <= 0xFAFF)
+                || (0x20000 <= o && o <= 0x2FA1F) || (0x3040 <= o && o <= 0x30FF) || (0xAC00 <= o && o <= 0xD7AF);
+        }
+
+        function calcDisplayLen(text) {
+            text = String(text).replace(/<[^>]+>/g, '');
+            let total = 0.0;
+            for (const ch of text) {
+                if ('\r\n\u2028\u2029'.includes(ch)) continue;
+                total += _isCjkChar(ch) ? 1.0 : 0.5;
+            }
+            return total;
+        }
+
+        function getLengthWarning(row) {
+            // 这一行是否超过所属项目的字数规则。超过返回 [列号, 实际字数, 允许字数]，没超过返回 null
+            const name = row ? String(row[0]).replace(/<[^>]+>/g, '') : "";
+            for (const [proj, rules] of LENGTH_RULES) {
+                if (name.startsWith(proj)) {
+                    for (const [col, limit] of rules) {
+                        if (col < row.length) {
+                            const n = calcDisplayLen(row[col]);
+                            if (n > limit) return [col, n, limit];
+                        }
+                    }
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // ================= 整体解析（对应桌面版 processOrders 的数据部分，不碰界面） =================
+        function parseOrders(rawText) {
+            const text = rawText.trim();
+            const data = [];
+            const stats = {};
+            if (!text) return { data: data, stats: stats };
+
+            const blocks = text.split(/\n[\s​-‏‪-‮⁠-⁩﻿͏]*\n/);
+            const typeCounts = {};
+            let globalProducts = [];
+            let _firstBlock = true;
+
+            for (const block of blocks) {
+                const cleanBlock = block.trim();
+                if (!cleanBlock) continue;
+
+                const person = extractPersonInfo(cleanBlock);
+                const currentBlockProducts = extractProductsFromBlock(cleanBlock);
+                if (currentBlockProducts.length) globalProducts = currentBlockProducts;
+                const productsToApply = currentBlockProducts.length ? currentBlockProducts : (globalProducts.length ? inheritedQtyProducts(cleanBlock, globalProducts) : globalProducts);
+
+                const valid_for_process = (person.name !== "") || productsToApply.some(p => FANGYU_LIKE.includes(p.type));
+
+                // 【第一个订单无法识别项目】只有排在最前面的第一个订单识别不出项目时，输出一个空行占位（中间的不识别订单仍按原逻辑跳过）
+                if (_firstBlock && !currentBlockProducts.length) {
+                    data.push(new Array(14).fill(""));
+                }
+                _firstBlock = false;
+
+                if (valid_for_process && productsToApply.length) {
+                    for (const prod of productsToApply) {
+                        typeCounts[prod.type] = (typeCounts[prod.type] || 0) + 1;
+                        const row = buildRow(prod, person, typeCounts[prod.type]);
+                        data.push(row);
+                        stats[prod.type] = (stats[prod.type] || 0) + 1;
+                    }
+                }
+            }
+            return { data: data, stats: stats };
+        }
+
+        // ================= 界面部分（表格显示：红字 + 字数超限黄色提醒） =================
+        const RED_SPAN_RE = /<span style='color:#ff4444;'>([\s\S]*?)<\/span>/g;
+        function cellToSegments(cell) {
+            // 把带 <span> 的单元格字符串拆成 [[文字, 是否红字], ...]
+            cell = String(cell);
+            const segs = [];
+            let pos = 0;
+            for (const m of cell.matchAll(RED_SPAN_RE)) {
+                if (m.index > pos) segs.push([cell.slice(pos, m.index), false]);
+                segs.push([m[1], true]);
+                pos = m.index + m[0].length;
+            }
+            if (pos < cell.length) segs.push([cell.slice(pos), false]);
+            return segs;
+        }
+
+        let globalProcessedData = [];
+
+        function processOrders() {
+            const text = document.getElementById('inputArea').value.trim();
+            if (!text) return;
+
+            const res = parseOrders(text);
+            globalProcessedData = res.data;
+            let tplMsg = "";
+            try { tplMsg = applyTemplateAssign(text); } catch (e) { tplMsg = ""; }   // 按记录指定模板号（“不指定”模式下什么都不做）
+            renderTable();
+
+            const total = Object.values(res.stats).reduce((a, b) => a + b, 0);
+            let statusText = `总计: ${total} &nbsp;|&nbsp; ` +
+                             Object.entries(res.stats).map(([k, v]) => `${k}: ${v}`).join(" &nbsp; ");
+            if (tplMsg) statusText += ` &nbsp;|&nbsp; ${tplEscHtml(tplMsg)}`;
+            document.getElementById('statusLabel').innerHTML = statusText;
+        }
+
+        const COL_NAMES = ["名称", "指定", "农历", "年历", "姓名", "性别", "属相", "年龄", "年", "月", "日", "时辰", "其他", "小人"];
+
+        function updateLengthWarning(tr) {
+            // 按字数规则刷新这一行"名称"的黄色提醒（只改显示颜色，不改任何内容）
+            const first = tr.firstChild;
+            if (!first) return;
+            const cells = Array.from(tr.children).map(td => td.innerText);
+            const warn = getLengthWarning(cells);
+            if (warn) {
+                first.classList.add('name-warn');
+                first.title = `${COL_NAMES[warn[0]]}列 ${warn[1]} 字，超过规定的 ${warn[2]} 字`;
+            } else {
+                first.classList.remove('name-warn');
+                first.removeAttribute('title');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
+            for (let row of globalProcessedData) {
+                let tr = document.createElement('tr');
+                for (let cell of row) {
+                    let td = document.createElement('td');
+                    // 文字用 textContent 放入（不会被当成网页代码），红字部分单独包一层红色
+                    for (const [t, red] of cellToSegments(cell)) {
+                        if (red) {
+                            const sp = document.createElement('span');
+                            sp.style.color = '#ff4444';
+                            sp.textContent = t;
+                            td.appendChild(sp);
+                        } else {
+                            td.appendChild(document.createTextNode(t));
+                        }
+                    }
+                    td.contentEditable = "true";
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+                updateLengthWarning(tr);
+            }
+        }
+
+        // 在表格里直接修改内容后，名称的黄色提醒随之刷新
+        document.getElementById('tableBody').addEventListener('input', function (e) {
+            const tr = e.target && e.target.closest ? e.target.closest('tr') : null;
+            if (tr) updateLengthWarning(tr);
+        });
+
+        function copyTableData() {
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0) {
+                alert("没有数据可复制！");
+                return;
+            }
+            let tsvLines = [];
+            rows.forEach(tr => {
+                let rowData = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    rowData.push(td.innerText.replace(/\n/g, ' '));
+                });
+                tsvLines.push(rowData.join('\t'));
+            });
+
+            navigator.clipboard.writeText(tsvLines.join('\n')).then(() => {
+                commitTemplateRecord();
+                alert('数据已复制，可直接粘贴到 Excel/Numbers 中。');
+            }).catch(err => {
+                alert('复制失败，请手动选中表格复制。');
+            });
+        }
+
+        function getDefaultDateFileName() {
+            const now = new Date();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            return `自动${mm}${dd}`;
+        }
+
+        function openShareModal() {
+            const tbody = document.getElementById('tableBody');
+            if (tbody.querySelectorAll('tr').length === 0) {
+                alert("请先解析数据！");
+                return;
+            }
+            const _tplCust = document.getElementById('tplCustomer').value.trim();
+            document.getElementById('shareFilenameInput').value = (tplModeIdx() === 1 && _tplCust) ? _tplCust : getDefaultDateFileName();   // 指定模式：默认文件名就是客户csv名称
+            document.getElementById('shareModal').style.display = 'flex';
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').style.display = 'none';
+        }
+
+        function confirmShareToWeChat() {
+            let userInputName = document.getElementById('shareFilenameInput').value.trim();
+            const defaultName = getDefaultDateFileName();
+            
+            userInputName = userInputName === "" ? defaultName : userInputName;
+            if (!userInputName.toLowerCase().endsWith('.csv')) {
+                userInputName += '.csv';
+            }
+            const filename = userInputName;
+
+            closeShareModal();
+
+            const header = ["名称", "指定", "农历", "年历", "姓名", "性别", "属相", "年龄", "年", "月", "日", "时辰", "其他", "小人"];
+            let csvContent = header.join(",") + "\r\n";
+            
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            rows.forEach(tr => {
+                let cleanRow = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    let str = td.innerText;
+                    str = str.replace(/"/g, '""');
+                    if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+                        str = `"${str}"`;
+                    }
+                    cleanRow.push(str);
+                });
+                csvContent += cleanRow.join(",") + "\r\n";
+            });
+
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            // 优先：直接调出系统分享面板（选微信 → 选好友/文件传输助手即可），不再先下载
+            // 不支持文件分享的环境（如电脑浏览器），自动退回原来的下载方式
+            if (navigator.share && navigator.canShare && typeof File === 'function') {
+                let file = null;
+                try { file = new File([blob], filename, { type: 'text/csv' }); } catch (e) { file = null; }
+                if (file && navigator.canShare({ files: [file] })) {
+                    navigator.share({ files: [file] }).then(() => {
+                        commitTemplateRecord();                      // 分享成功后，把本次用到的模板号记到这个客户名下
+                    }, err => {
+                        if (err && err.name === 'AbortError') return;   // 自己点了取消，不处理（也不记录模板号）
+                        downloadCsvFile(blob, filename);
+                        commitTemplateRecord();
+                    });
+                    return;
+                }
+            }
+            downloadCsvFile(blob, filename);
+            commitTemplateRecord();
+        }
+
+        function downloadCsvFile(blob, filename) {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.styleSheets && (link.style.display = "none");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(link.href), 100);
+        }
+
+        // ================= 模板指定列记忆（对应桌面版 run5.8.1 的“模板指定列记忆功能”） =================
+        // 网页无法扫描电脑上的模板文件夹：各套模板里“每个项目有几个模板”由电脑导出后粘贴导入；
+        // 记忆（每个客户上一次用到的模板号）与桌面版 理单模板记忆.json 是同一个格式，可以互相复制。
+        const TPL_LS_KEY = 'huangensi_tpl_memory_v1';
+        const tplState = {
+            store: { template_root: "", template_roots: ["", ""], active_set: 0, mode: 0, records: {} },
+            sets: [{ root: "", name: "", counts: {} }, { root: "", name: "", counts: {} }]
+        };
+        let tplPending = null;                 // 本次解析出来、等导出/复制后记入记忆的模板号
+        const tplNameWarned = new Set();       // 已经提醒过“没填客户名称”的订单（同一份订单只提醒一次）
+        let tplImportData = null;              // 导入的客户csv：{stem, data, filename}
+
+        const _hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+        function normCustomerKey(name) {
+            // 客户csv名称归一：去空格、去 .csv 后缀、全角转半角、忽略大小写（LL = ll）
+            let t = String(name == null ? '' : name).normalize('NFKC').trim();
+            if (t.toLowerCase().endsWith('.csv')) t = t.slice(0, -4).trim();
+            return t.toLowerCase().replace(/ß/g, 'ss');
+        }
+
+        function tplEscHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function tplSetStatus(msg) {
+            document.getElementById('statusLabel').textContent = msg;
+        }
+
+        // ---------- 数据整理 ----------
+        function tplCleanCounts(c) {
+            const out = {};
+            if (c && typeof c === 'object') {
+                for (const k of Object.keys(c)) {
+                    const n = parseInt(c[k], 10);
+                    if (n > 0) out[k] = n;
+                }
+            }
+            return out;
+        }
+
+        function tplNormSet(s) {
+            s = s || {};
+            return { root: String(s.root || ''), name: String(s.name || ''), counts: tplCleanCounts(s.counts) };
+        }
+
+        function tplNormalizeStore(d) {
+            // 与桌面版 TemplateStore.load 一致（含旧版只有一套模板的兼容）
+            const st = { template_root: "", template_roots: ["", ""], active_set: 0, mode: 0, records: {} };
+            if (d && typeof d === 'object') {
+                if (typeof d.template_root === 'string') st.template_root = d.template_root;
+                if (Array.isArray(d.template_roots)) st.template_roots = d.template_roots.map(x => String(x || ''));
+                if (d.active_set === 1) st.active_set = 1;
+                if (d.mode === 1) st.mode = 1;
+                if (d.records && typeof d.records === 'object' && !Array.isArray(d.records)) st.records = d.records;
+            }
+            const roots = st.template_roots.concat(["", ""]).slice(0, 2);
+            if (!roots[0] && !roots[1] && st.template_root) roots[0] = st.template_root;
+            st.template_roots = roots;
+            return st;
+        }
+
+        function tplSetNameFromRoot(root) {
+            // 套名 = 模板文件夹的上一级文件夹名（如 D:\财神殿\2026新模板\模板 → 2026新模板）
+            const parts = String(root || '').split(/[\\/]+/).filter(Boolean);
+            if (!parts.length) return "";
+            const base = parts[parts.length - 1];
+            if (base === '模版' || base === '模板') return parts.length >= 2 ? parts[parts.length - 2] : base;
+            return base;
+        }
+
+        function tplFixSetNames() {
+            const a = tplState.sets[0], b = tplState.sets[1];
+            if (a.name && a.name === b.name) b.name = b.name + "②";     // 两套同名时加后缀区分，避免记忆串号
+        }
+
+        function tplEnsureActive() {
+            // 选中的那一套没有数量、另一套有时，自动切到另一套（和桌面版打开软件时一致）
+            const st = tplState.store;
+            if (!Object.keys(tplState.sets[st.active_set].counts).length && Object.keys(tplState.sets[1 - st.active_set].counts).length) {
+                st.active_set = 1 - st.active_set;
+            }
+        }
+
+        function tplSave() {
+            try {
+                localStorage.setItem(TPL_LS_KEY, JSON.stringify({ store: tplState.store, sets: tplState.sets }));
+                return true;
+            } catch (e) { return false; }
+        }
+
+        function tplLoad() {
+            try {
+                const raw = localStorage.getItem(TPL_LS_KEY);
+                if (!raw) return;
+                const d = JSON.parse(raw);
+                tplState.store = tplNormalizeStore(d.store);
+                if (Array.isArray(d.sets)) {
+                    tplState.sets = [tplNormSet(d.sets[0]), tplNormSet(d.sets[1])];
+                }
+            } catch (e) { /* 读不到就当作还没有数据 */ }
+        }
+
+        // ---------- 读取当前状态 ----------
+        function tplModeIdx() { return document.getElementById('tplModeOn').checked ? 1 : 0; }
+        function tplActiveIdx() { return tplState.store.active_set === 1 ? 1 : 0; }
+        function tplCounts() { return tplState.sets[tplActiveIdx()].counts; }
+        function tplActiveSetName() { return tplState.sets[tplActiveIdx()].name || ('模板' + (tplActiveIdx() + 1)); }
+        function tplGetRec(key) { return _hasOwn(tplState.store.records, key) ? tplState.store.records[key] : null; }
+        function tplCount(counts, nm) { return _hasOwn(counts, nm) ? counts[nm] : 0; }
+
+        function tplRecLast(rec, setName) {
+            // 某客户在某一套模板里，每个项目上次用到的号（旧版只有一套时的记录，归入第1套）
+            if (!rec) return {};
+            const bs = rec.by_set;
+            if (bs !== undefined && bs !== null) return Object.assign({}, bs[setName] || {});
+            if (setName && setName === tplState.sets[0].name) return Object.assign({}, rec.last || {});
+            return {};
+        }
+
+        function tplNowStr() {
+            const d = new Date(), p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+
+        function tplSaveRecLast(key, name, setName, last) {
+            const old = tplGetRec(key) || {};
+            let bs = old.by_set;
+            if (bs === undefined || bs === null) {
+                bs = {};
+                if (old.last && Object.keys(old.last).length && tplState.sets[0].name) {
+                    bs[tplState.sets[0].name] = Object.assign({}, old.last);     // 旧记录归入第1套
+                }
+            }
+            bs[setName] = last;
+            Object.defineProperty(tplState.store.records, key, {
+                value: { name: name, by_set: bs, time: tplNowStr() },
+                writable: true, enumerable: true, configurable: true
+            });
+        }
+
+        // ---------- 解析后：按“该客户上一次用到的模板号”往后给每一行填指定列 ----------
+        function applyTemplateAssign(text) {
+            tplPending = null;
+            if (tplModeIdx() !== 1) return "";
+            const cname = document.getElementById('tplCustomer').value;
+            const key = normCustomerKey(cname);
+            const sig = text.replace(/\s+/g, '');
+            if (!key) {
+                if (!tplNameWarned.has(sig)) {
+                    tplNameWarned.add(sig);
+                    alert("当前是“按记忆指定模板号”模式，但还没有输入【客户csv名称】。\n\n不输入客户名称，系统不知道把模板号记在哪个客户名下，所以这次指定列不会填。\n请先在上方输入客户csv名称，再点“解析数据”。");
+                }
+                return "⚠ 未填客户csv名称，指定列未填";
+            }
+            const counts = tplCounts();
+            if (!Object.keys(counts).length) return "⚠ 还没有导入模板数据，指定列未填";
+            const rec = tplGetRec(key);
+            // 始终接着记忆里“上一次导出/复制后”的号往后排（还没导出前重复点解析，记忆没变，所以号码也不会乱跳）
+            const setName = tplActiveSetName();
+            const startRec = tplRecLast(rec, setName);
+            const start = Object.assign({}, startRec);
+            const cur = Object.assign({}, start);
+            const missing = [];
+            let filled = 0;
+            for (const row of globalProcessedData) {
+                const nm = row[0];
+                if (!nm) continue;
+                const N = tplCount(counts, nm);
+                if (!N) {
+                    if (!missing.includes(nm)) missing.push(nm);
+                    continue;
+                }
+                const n = ((_hasOwn(cur, nm) ? cur[nm] : 0) % N) + 1;
+                row[1] = String(n);
+                cur[nm] = n;
+                filled++;
+            }
+            tplPending = { key: key, name: cname.trim(), start: start, last: cur, sig: sig, set: setName, done: false };
+            let msg = `【${setName}】指定列已填 ${filled} 行（${Object.keys(startRec).length ? '接着上次' : '新客户从1号开始'}）`;
+            if (missing.length) msg += `，无模板文件夹：${missing.join('、')}`;
+            return msg;
+        }
+
+        // 导出/复制时，把本次用到的模板号记到这个客户名下（只记最近一次，上一次自动覆盖）
+        function commitTemplateRecord() {
+            const p = tplPending;
+            if (!p || p.done) return;
+            try {
+                const last = Object.assign({}, p.start, p.last);
+                const st = tplState.sets.find(s => s.name === p.set);
+                const cnt = st ? st.counts : tplCounts();
+                // 以表格“指定”列当前的内容为准（你手动改过的号也会被记住）：每个项目取最后一行的号
+                document.querySelectorAll('#tableBody tr').forEach(tr => {
+                    const nm = tr.children[0] ? tr.children[0].innerText.trim() : "";
+                    if (!nm || !tplCount(cnt, nm)) return;
+                    const val = tr.children[1] ? tr.children[1].innerText.trim() : "";
+                    if (/^[0-9]+$/.test(val) && parseInt(val, 10) > 0) last[nm] = parseInt(val, 10);
+                });
+                tplSaveRecLast(p.key, p.name, p.set || tplActiveSetName(), last);
+                tplSave();
+                p.done = true;
+                document.getElementById('tplCustomer').value = "";      // 记录完成后清空客户名称，避免下一个客户忘记改名造成覆盖
+                document.getElementById('statusLabel').innerHTML += " &nbsp;|&nbsp; 已记录模板号，客户名称已清空";
+                tplRefreshUI();
+            } catch (e) { /* 记忆失败不影响导出 */ }
+        }
+
+        // ---------- 导入以前的客户csv → 更新记忆 ----------
+        function tplParseCsvLine(line) {
+            const out = []; let cur = '', q = false;
+            for (let i = 0; i < line.length; i++) {
+                const c = line[i];
+                if (q) {
+                    if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+                    else cur += c;
+                } else if (c === '"') q = true;
+                else if (c === ',') { out.push(cur); cur = ''; }
+                else cur += c;
+            }
+            out.push(cur);
+            return out;
+        }
+
+        function parseTemplateCsv(text, filename) {
+            // 读取以前导出的客户csv：返回 [客户名=文件名去掉.csv, {项目名称: 该项目“指定”列最后用到的模板号}]
+            const stem = String(filename || '').replace(/^.*[\\/]/, '').replace(/\.[^.]*$/, '');
+            const rows = text.split(/\r\n|\n|\r/).filter((l, i, a) => !(i === a.length - 1 && l === '')).map(tplParseCsvLine);
+            let iName = 0, iAssign = 1, start = 0;
+            if (rows.length) {
+                const hdr = rows[0].map(c => c.trim());
+                if (hdr.includes('名称') || hdr.includes('指定')) {
+                    start = 1;
+                    if (hdr.includes('名称')) iName = hdr.indexOf('名称');
+                    if (hdr.includes('指定')) iAssign = hdr.indexOf('指定');
+                }
+            }
+            const last = {};
+            for (const r of rows.slice(start)) {
+                if (r.length <= Math.max(iName, iAssign)) continue;
+                const nm = r[iName].trim();
+                const nums = r[iAssign].match(/\d+/g);
+                if (nm && nums && parseInt(nums[nums.length - 1], 10) > 0) last[nm] = parseInt(nums[nums.length - 1], 10);   // 同一项目取文件里最后出现的那个号
+            }
+            return [stem, last];
+        }
+
+        function tplDecodeCsv(buf) {
+            for (const enc of ['utf-8', 'gb18030']) {
+                try { return new TextDecoder(enc, { fatal: true }).decode(buf); } catch (e) { /* 换下一种编码 */ }
+            }
+            return null;
+        }
+
+        function tplOnCsvChosen(file) {
+            if (!file) return;
+            const fr = new FileReader();
+            fr.onload = function () {
+                const text = tplDecodeCsv(fr.result);
+                if (text === null) { alert("这个csv读不了（编码无法识别）。"); return; }
+                const [stem, data] = parseTemplateCsv(text, file.name);
+                if (!Object.keys(data).length) {
+                    alert("这个csv的“指定”列里没有找到模板号，请确认选对了文件。");
+                    return;
+                }
+                tplImportData = { stem: stem, data: data, filename: file.name };
+                document.getElementById('tplCustomer').value = stem;      // 文件名（不带.csv）自动填到上面，方便你二次检查
+                tplSetStatus(`状态：已读取 ${file.name}，共 ${Object.keys(data).length} 个项目的模板号 | 请核对上面客户名称，再点“更新记忆”`);
+            };
+            fr.onerror = function () { alert("这个csv读不了。"); };
+            fr.readAsArrayBuffer(file);
+        }
+
+        function tplUpdateMemoryFromCsv() {
+            if (!tplImportData) { alert("请先点“浏览导入csv”，选择以前导出的客户csv。"); return; }
+            const name = document.getElementById('tplCustomer').value.trim();
+            const key = normCustomerKey(name);
+            if (!key) { alert("上面的“客户csv名称”是空的，请填写客户名称后再更新记忆。"); return; }
+            const { data, filename } = tplImportData;
+            const counts = tplCounts();
+            const lines = [];
+            for (const nm of Object.keys(data)) {
+                const n = data[nm], N = tplCount(counts, nm);
+                const nxt = N ? (n % N + 1) : n + 1;
+                lines.push(`${nm}：用到 ${n} 号 → 下次从 ${nxt} 号开始` + (N ? "" : "（没找到该项目的模板文件夹）"));
+            }
+            const old = tplGetRec(key);
+            const tip = old ? "（这个客户已有记忆，相同项目会被覆盖，其他项目保留）" : "（新客户）";
+            const setName = tplActiveSetName();
+            if (!confirm(`客户：${name} ${tip}\n模板：${setName}\n来源：${filename}\n\n${lines.join("\n")}\n\n确定更新吗？`)) return;
+            const last = tplRecLast(old || {}, setName);
+            Object.assign(last, data);
+            tplSaveRecLast(key, name, setName, last);
+            tplSave();
+            tplPending = null;
+            tplImportData = null;
+            document.getElementById('tplCustomer').value = "";
+            tplRefreshUI();
+            tplSetStatus(`状态：已更新“${name}”在【${setName}】的模板记忆（${Object.keys(data).length} 个项目）| 客户名称已清空`);
+        }
+
+        // ---------- 模板复制记忆：把另一套模板里所有客户的记忆，复制到当前选中的这一套 ----------
+        function tplCopyMemoryFromSet() {
+            const target = tplActiveSetName();
+            const recs = tplState.store.records;
+            let names = [];
+            for (const key of Object.keys(recs)) {
+                const rec = recs[key] || {};
+                for (const nm of Object.keys(rec.by_set || {})) if (!names.includes(nm)) names.push(nm);
+                if ((rec.by_set === undefined || rec.by_set === null) && rec.last && Object.keys(rec.last).length &&
+                    tplState.sets[0].name && !names.includes(tplState.sets[0].name)) names.push(tplState.sets[0].name);
+            }
+            names = names.filter(n => n !== target);
+            if (!names.length) { alert(`除了当前这套【${target}】，没有找到其他模板的记忆。`); return; }
+            let src = names[0];
+            if (names.length > 1) {
+                const ans = prompt(`把哪一套模板的记忆，复制到当前这套【${target}】？\n请输入数字：\n` + names.map((n, i) => `${i + 1}. ${n}`).join("\n"), "1");
+                if (ans === null) return;
+                const idx = parseInt(ans, 10) - 1;
+                if (!(idx >= 0 && idx < names.length)) { alert("没有这个选项。"); return; }
+                src = names[idx];
+            }
+            const counts = tplCounts();
+            const plan = [];
+            let nCust = 0, nProj = 0, nReset = 0, nSkip = 0;
+            for (const key of Object.keys(recs)) {
+                const rec = recs[key];
+                const srcLast = tplRecLast(rec, src);
+                if (!Object.keys(srcLast).length) continue;
+                const cur = tplRecLast(rec, target);
+                const nw = Object.assign({}, cur);
+                let added = 0;
+                for (const pj of Object.keys(srcLast)) {
+                    let n = srcLast[pj];
+                    if (_hasOwn(cur, pj)) { nSkip++; continue; }
+                    const N = tplCount(counts, pj);
+                    if (N && n > N) { n = N; nReset++; }              // 下次就是 1 号
+                    nw[pj] = n;
+                    added++;
+                }
+                if (added) { plan.push([key, (rec && rec.name) || key, nw]); nCust++; nProj += added; }
+            }
+            if (!plan.length) { alert(`【${src}】里的记忆，在【${target}】里都已经有了，没有需要复制的。`); return; }
+            if (!confirm(`从【${src}】复制到【${target}】：\n\n客户 ${nCust} 个，项目记录 ${nProj} 条\n其中旧号超过新套模板数量、从 1 号重新开始的：${nReset} 条\n当前套已有、不覆盖的：${nSkip} 条\n\n确定复制吗？`)) return;
+            for (const [key, name, nw] of plan) tplSaveRecLast(key, name, target, nw);
+            tplSave();
+            tplPending = null;
+            tplRefreshUI();
+            tplSetStatus(`状态：已把【${src}】的记忆复制到【${target}】（${nCust} 个客户，${nProj} 条）`);
+        }
+
+        // ---------- 把电脑上的模板数据导入网页 ----------
+        function tplParseCountsText(text) {
+            // 纯文字格式（和桌面版鼠标悬停时看到的一样）：
+            //   【2026新模板】
+            //   化太岁一份：12
+            //   清水寺一份：8
+            const sections = [];
+            let cur = null;
+            for (const line of text.split(/\r?\n/)) {
+                const t = line.trim();
+                if (!t) continue;
+                let m = t.match(/^【(.+?)】\s*(.*)$/);
+                if (m) { cur = { name: m[1].trim(), root: m[2].trim(), counts: {} }; sections.push(cur); continue; }
+                m = t.match(/^(.+?)[\s:：=,，]+(\d+)$/);
+                if (m && parseInt(m[2], 10) > 0) {
+                    if (!cur) { cur = { name: '', root: '', counts: {} }; sections.push(cur); }
+                    cur.counts[m[1].trim()] = parseInt(m[2], 10);
+                }
+            }
+            return sections.filter(s => Object.keys(s.counts).length);
+        }
+
+        function tplImportText(text) {
+            text = String(text || '').replace(/^\uFEFF/, '').trim();
+            if (!text) return { ok: false, msg: "没有内容可导入，请先把电脑上生成的模板数据粘贴进来。" };
+            let d = null;
+            try { d = JSON.parse(text); } catch (e) { d = null; }
+            const notes = [];
+            if (d && typeof d === 'object' && !Array.isArray(d)) {
+                const store = tplNormalizeStore(d);
+                let sets;
+                if (Array.isArray(d.web_template_sets) && d.web_template_sets.length) {
+                    sets = [tplNormSet(d.web_template_sets[0]), tplNormSet(d.web_template_sets[1])];
+                } else {
+                    // 电脑原来的 理单模板记忆.json 里没有数量：套名由路径推出，数量沿用网页里同名那一套已有的
+                    sets = [0, 1].map(i => {
+                        const root = store.template_roots[i] || '';
+                        const name = root ? tplSetNameFromRoot(root) : '';
+                        const old = name ? tplState.sets.find(s => s.name === name) : null;
+                        return { root: root, name: name, counts: old ? Object.assign({}, old.counts) : {} };
+                    });
+                    notes.push("这份数据里没有模板数量，请再用“导出模板数据”小工具生成带数量的数据导入。");
+                }
+                tplState.store = store;
+                tplState.sets = sets;
+            } else {
+                const secs = tplParseCountsText(text);
+                if (!secs.length) return { ok: false, msg: "这段内容看不懂：既不是电脑导出的模板数据，也不是“项目：数量”的文字。" };
+                secs.slice(0, 2).forEach((sc, i) => {
+                    const old = tplState.sets[i];
+                    tplState.sets[i] = { root: sc.root || old.root, name: sc.name || old.name || ('模板' + (i + 1)), counts: sc.counts };
+                });
+            }
+            tplFixSetNames();
+            tplEnsureActive();
+            tplSave();
+            tplRefreshUI();
+            const parts = tplState.sets.map((s, i) => {
+                const n = Object.keys(s.counts).length;
+                return n ? `${s.name || ('模板' + (i + 1))}：${n} 个项目 / ${Object.values(s.counts).reduce((a, b) => a + b, 0)} 个版` : null;
+            }).filter(Boolean);
+            const custN = Object.keys(tplState.store.records).length;
+            return { ok: true, msg: `导入完成。记忆客户 ${custN} 个${parts.length ? '；' + parts.join('；') : ''}。` + (notes.length ? '\n' + notes.join('\n') : '') };
+        }
+
+        // ---------- 把网页里的记忆导出（复制回电脑） ----------
+        function tplBuildExport() {
+            const s = tplState.store;
+            return JSON.stringify({
+                template_root: s.template_root,
+                template_roots: s.template_roots.slice(),
+                active_set: s.active_set,
+                mode: s.mode,
+                records: s.records,
+                web_template_sets: tplState.sets.map(x => ({ root: x.root, name: x.name, counts: x.counts }))
+            }, null, 1);
+        }
+
+        // ---------- 界面 ----------
+        function tplRefreshUI() {
+            const st = tplState.store;
+            [0, 1].forEach(i => {
+                const s = tplState.sets[i];
+                const nm = s.name || ('模板' + (i + 1));
+                const has = Object.keys(s.counts).length > 0;
+                const btn = document.getElementById('tplSetBtn' + i);
+                btn.textContent = nm;
+                btn.disabled = !has;
+                btn.classList.toggle('active', st.active_set === i);
+                const info = document.getElementById('tplInfo' + i);
+                if (has) info.textContent = `${nm}：${Object.keys(s.counts).length} 个项目 / ${Object.values(s.counts).reduce((a, b) => a + b, 0)} 个版`;
+                else if (s.root) info.textContent = `${nm}：没有模板数量`;
+                else info.textContent = `模板${i + 1}：未导入`;
+                info.classList.toggle('empty', !has);
+            });
+            document.getElementById('tplModeOn').checked = st.mode === 1;
+            document.getElementById('tplModeOff').checked = st.mode !== 1;
+            document.getElementById('tplMemInfo').textContent = `已记忆客户：${Object.keys(st.records).length} 个`;
+        }
+
+        function tplShowInfoDetail(i) {
+            const s = tplState.sets[i];
+            const keys = Object.keys(s.counts).sort();
+            if (!keys.length) { alert(`模板${i + 1}还没有导入模板数量。`); return; }
+            alert(`【${s.name || ('模板' + (i + 1))}】${s.root}\n` + keys.map(k => `${k}：${s.counts[k]}`).join("\n"));
+        }
+
+        function tplCloseData() { document.getElementById('tplDataModal').style.display = 'none'; }
+
+        function tplCopyText(text, ta) {
+            const fallback = () => {
+                try { ta.focus(); ta.select(); ta.setSelectionRange(0, text.length); document.execCommand('copy'); alert('已复制。'); }
+                catch (e) { alert('复制失败，请长按文本框手动全选复制。'); }
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => alert('已复制，可直接粘贴到电脑上的 理单模板记忆.json 里。'), fallback);
+            } else fallback();
+        }
+
+        function tplShareTextFile(text, filename) {
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+            if (navigator.share && navigator.canShare && typeof File === 'function') {
+                let file = null;
+                try { file = new File([blob], filename, { type: 'text/plain' }); } catch (e) { file = null; }
+                if (file && navigator.canShare({ files: [file] })) {
+                    navigator.share({ files: [file] }).catch(err => {
+                        if (err && err.name === 'AbortError') return;
+                        downloadCsvFile(blob, filename);
+                    });
+                    return;
+                }
+            }
+            downloadCsvFile(blob, filename);
+        }
+
+        function tplOpenModal(mode) {
+            const title = document.getElementById('tplDataTitle'), sub = document.getElementById('tplDataSub');
+            const ta = document.getElementById('tplDataText'), btns = document.getElementById('tplDataBtns');
+            const fileRow = document.getElementById('tplDataFileRow');
+            btns.innerHTML = '';
+            const mk = (txt, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; b.className = cls; b.onclick = fn; btns.appendChild(b); };
+            if (mode === 'import') {
+                title.textContent = '导入电脑模板数据';
+                sub.textContent = '把电脑上“导出模板数据”小工具生成的内容整段粘贴到下面（也可以选择它生成的txt文件）';
+                ta.value = ''; ta.readOnly = false; ta.placeholder = '在这里粘贴模板数据…';
+                fileRow.style.display = '';
+                mk('取消', 'btn-modal-cancel', tplCloseData);
+                mk('确认导入', 'btn-modal-confirm', function () {
+                    const r = tplImportText(ta.value);
+                    alert(r.msg);
+                    if (r.ok) { tplCloseData(); tplSetStatus('状态：' + r.msg.replace(/\n/g, ' ')); }
+                });
+            } else {
+                const text = tplBuildExport();
+                title.textContent = '导出模板记忆';
+                sub.textContent = '复制全部内容，粘贴替换电脑上 理单模板记忆.json 里的内容并保存；或点“分享为txt文件”发到电脑';
+                ta.value = text; ta.readOnly = true;
+                fileRow.style.display = 'none';
+                mk('关闭', 'btn-modal-cancel', tplCloseData);
+                mk('分享为txt文件', 'btn-modal-cancel', function () { tplShareTextFile(text, '理单模板记忆.txt'); });
+                mk('复制全部', 'btn-modal-confirm', function () { tplCopyText(text, ta); });
+            }
+            document.getElementById('tplDataModal').style.display = 'flex';
+        }
+        function tplOpenImport() { tplOpenModal('import'); }
+        function tplOpenExport() { tplOpenModal('export'); }
+
+        function tplInit() {
+            tplLoad();
+            tplFixSetNames();
+            tplEnsureActive();
+            document.getElementById('tplModeOff').addEventListener('change', function () { tplState.store.mode = 0; tplSave(); });
+            document.getElementById('tplModeOn').addEventListener('change', function () { tplState.store.mode = 1; tplSave(); });
+            [0, 1].forEach(i => {
+                document.getElementById('tplSetBtn' + i).addEventListener('click', function () {
+                    tplState.store.active_set = i; tplSave(); tplRefreshUI();
+                });
+                document.getElementById('tplInfo' + i).addEventListener('click', function () { tplShowInfoDetail(i); });
+            });
+            document.getElementById('tplCsvFile').addEventListener('change', function () {
+                tplOnCsvChosen(this.files && this.files[0]);
+                this.value = '';
+            });
+            document.getElementById('tplDataFile').addEventListener('change', function () {
+                const f = this.files && this.files[0];
+                if (!f) return;
+                const fr = new FileReader();
+                fr.onload = function () { document.getElementById('tplDataText').value = String(fr.result || ''); };
+                fr.readAsText(f, 'utf-8');
+                this.value = '';
+            });
+            tplRefreshUI();
+            const noData = !Object.keys(tplState.sets[0].counts).length && !Object.keys(tplState.sets[1].counts).length;
+            document.getElementById('tplMore').open = noData;          // 第一次使用时展开，提示先导入模板数据
+        }
+        tplInit();
+    </script>
+</body>
+</html>
