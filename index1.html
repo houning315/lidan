@@ -282,7 +282,7 @@
         </div>
         <div class="tpl-memrow">
             <button type="button" class="btn-tpl gold" onclick="tplOpenMemExport()">导出客户记忆txt（给电脑导入）</button>
-            <button type="button" class="btn-tpl" onclick="tplOpenMemImport()">导入客户记忆txt</button>
+            <button type="button" class="btn-tpl" onclick="tplOpenMemImport()">导入电脑数据（模板+记忆）</button>
         </div>
         <details class="tpl-more" id="tplMore">
             <summary>模板数据管理（电脑 ⇄ 网页）</summary>
@@ -3089,21 +3089,15 @@
                     if (r.ok) { tplCloseData(); tplSetStatus('状态：' + r.msg.replace(/\n/g, ' ')); }
                 });
             } else if (mode === 'memimport') {
-                title.textContent = '导入客户记忆txt';
-                sub.textContent = '选择电脑版“导出记忆txt”生成的txt文件（或把里面的内容整段粘贴到下面）。只更新txt里这些客户，其他客户的记忆不受影响。';
-                ta.value = ''; ta.readOnly = false; ta.placeholder = '在这里粘贴客户记忆内容…';
+                title.textContent = '导入电脑数据（模板+记忆）';
+                sub.textContent = '选择电脑上“导出模板数据.py”生成的txt（含最新模板数量和全部客户记忆，会整体更新），或电脑版“导出记忆txt”生成的txt（只更新里面的客户）。也可以把内容整段粘贴到下面。';
+                ta.value = ''; ta.readOnly = false; ta.placeholder = '在这里粘贴电脑导出的内容…';
                 fileRow.style.display = '';
                 mk('取消', 'btn-modal-cancel', tplCloseData);
                 mk('确认导入', 'btn-modal-confirm', function () {
-                    let d = null;
-                    try { d = JSON.parse(String(ta.value || '').replace(/^\uFEFF/, '').trim()); } catch (e) { d = null; }
-                    if (!(d && typeof d === 'object' && d.tag === TPL_MEM_TAG && d.records && typeof d.records === 'object' && !Array.isArray(d.records))) {
-                        alert('这不是电脑版“导出记忆txt”生成的文件。');
-                        return;
-                    }
-                    const r = tplImportMemTxt(d);
+                    const r = tplImportText(ta.value);
                     alert(r.msg);
-                    if (r.ok) { tplCloseData(); tplSetStatus('状态：' + r.msg); }
+                    if (r.ok) { tplCloseData(); tplSetStatus('状态：' + r.msg.replace(/\n/g, ' ')); }
                 });
             } else {
                 const text = tplBuildExport();
